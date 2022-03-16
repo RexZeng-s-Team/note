@@ -1,0 +1,8 @@
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\obj\Debug\SimpleFactory.csproj.AssemblyReference.cache
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\obj\Debug\SimpleFactory.csproj.SuggestedBindingRedirects.cache
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\obj\Debug\SimpleFactory.csproj.CoreCompileInputs.cache
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\bin\Debug\SimpleFactory.exe.config
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\bin\Debug\SimpleFactory.exe
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\bin\Debug\SimpleFactory.pdb
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\obj\Debug\SimpleFactory.exe
+F:\personal\SystemArchitect\DesignPattern\SimpleFactory\obj\Debug\SimpleFactory.pdb
