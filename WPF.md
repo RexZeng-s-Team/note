@@ -538,7 +538,300 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
 ## 多线程
 
-1. 
+1. 使用线程的理由
+
+   + 可以使用线程将代码同其他代码隔离，提高应用程序的可靠性
+   + 可以使用线程来简化编码
+   + 可以使用线程来实现并发执行
+
+2. 基本知识
+
+   + 进程和线程：进程是操作系统执行程序的基本单位，拥有应用程序的资源，进程的资源被线程共享，线程不拥有资源
+
+   + 前台线程和后台线程：通过Thread类新建的线程默认为前台线程，当所有前台线程关闭时，所有的后台线程也会被直接终止，不会抛出异常
+
+   + 挂起和唤醒：由于线程的执行顺序和程序的执行情况不可预知，挂起和.唤醒可能会发生死锁，尽量少用
+
+   + 阻塞线程：Join，阻塞调用线程，直到该线程结束
+
+   + 终止线程：Abort，终止后的线程不可唤醒；Interrupt，通过捕获异常可以继续执行
+
+   + 线程优先级：默认为Normal
+
+     ```C#
+     //框架源码
+     namespace System.Threading
+     {
+         [Serializable]
+         [System.Runtime.InteropServices.ComVisible(true)]
+         public enum ThreadPriority
+         {
+             /*===========================================
+             ** Constants for thread priorities.
+             ============================================*/
+             Lowest = 0,
+             BelowNormal = 1,
+             Normal = 2,
+             AboveNormal = 3,
+             Highest = 4
+         }
+     }
+     ```
+
+3. 线程的使用
+
+   + 最简单的多线程调用-Thread
+
+   ```C#
+   public sealed class Thread : System.Runtime.ConstrainedExecution.CriticalFinalizerObject
+   ```
+
+   被sealed修饰的类，不可以产生子类，即不可被继承。
+
+   构造函数
+
+   ```C#
+   namespace SYstem.Threading
+   {
+       public sealed class Thread : System.Runtime.ConstrainedExecution.CriticalFinalizerObject
+       {
+           /*=========================================================================
+           ** Creates a new Thread object which will begin execution at
+           ** start.ThreadStart on a new thread when the Start method is called.
+           **
+           ** Exceptions: ArgumentNullException if start == null.
+           =========================================================================*/
+           [System.Security.SecuritySafeCritical]  // auto-generated
+           public Thread(ThreadStart start) {
+               if (start == null) {
+                   throw new ArgumentNullException("start");
+               }
+               Contract.EndContractBlock();
+               SetStartHelper((Delegate)start,0);  //0 will setup Thread with default stackSize
+           }
+    
+           [System.Security.SecuritySafeCritical]  // auto-generated
+           public Thread(ThreadStart start, int maxStackSize) {
+               if (start == null) {
+                   throw new ArgumentNullException("start");
+               }
+               if (0 > maxStackSize)
+                   throw new ArgumentOutOfRangeException("maxStackSize",Environment.GetResourceString("ArgumentOutOfRange_NeedNonNegNum"));
+               Contract.EndContractBlock();
+               SetStartHelper((Delegate)start, maxStackSize);
+           }
+           [System.Security.SecuritySafeCritical]  // auto-generated
+           public Thread(ParameterizedThreadStart start) {
+               if (start == null) {
+                   throw new ArgumentNullException("start");
+               }
+               Contract.EndContractBlock();
+               SetStartHelper((Delegate)start, 0);
+           }
+    
+           [System.Security.SecuritySafeCritical]  // auto-generated
+           public Thread(ParameterizedThreadStart start, int maxStackSize) {
+               if (start == null) {
+                   throw new ArgumentNullException("start");
+               }
+               if (0 > maxStackSize)
+                   throw new ArgumentOutOfRangeException("maxStackSize",Environment.GetResourceString("ArgumentOutOfRange_NeedNonNegNum"));
+               Contract.EndContractBlock();
+               SetStartHelper((Delegate)start, maxStackSize);
+           }
+       }
+   }
+   ```
+
+   ```C#
+   namespace System.Threading
+   {
+       public delegate void ThreadStart();
+       public delegate void ParameterizedThreadStart(Object obj);
+   }
+   ```
+
+   `Thread`类有4个重载的构造函数，`ThreadStart`和`ParameterizedThreadStart`是两个不含返回值的委托，`maxStackSize`指定该线程最大的访问栈空间。
+
+   ```C#
+   public class Program
+   {
+       public void Main(string[] args)
+       {
+           //创建没有参数的线程
+           Thread thread1 = new Thread(()=>
+           {
+   			//do...
+           });
+           //创建含有参数的线程
+           Thread thread2 = new Thread((Object o)=>
+           {
+                //do...                           
+           });
+           //启动线程
+           thread1.Start();
+           thread2.Start(Object o);
+       }
+   }
+   ```
+
+   + 线程池ThreadPool
+
+   由于线程的创建和销毁需要耗费一定的开销，过多的使用线程会造成内存资源的浪费，处于对性能的考虑，于是引入了线程池的概念。线程池维护一个请求队列，线程池的代码从队列中提取任务，然后委派给线程池的一个线程执行，线程执行完毕不会被立即销毁，这样既可以在后台执行任务，又可以减少线程创建和销毁所带来的开销。
+
+   ```C#
+   public static class ThreadPool
+   {
+       public static bool QueueUserWorkItem (System.Threading.WaitCallback callBack);
+       public static bool QueueUserWorkItem (System.Threading.WaitCallback callBack, object state);
+   }
+   ```
+
+   ```C#
+   public class Program
+   {
+       public void Main(string[] args)
+       {
+           ThreadPool.QueueUserWorkItem(()=>
+           {
+   			//do...
+           });
+           ThreadPool.QueueUserWorkItem((Obeject o)=>
+           {
+   			//do...
+           });
+       }
+   }
+   ```
+
+   + Task
+
+   ```C#
+   public class Task : IAsyncResult, IDisposable
+   ```
+
+   ```C#
+   public class Program
+   {
+       public void Main(string[] args)
+       {
+           //new方式实例化一个task，需要通过start方法启动
+           Task task1 = new Task(() =>
+           {
+                //do...
+           });
+           task1.Start();
+           Task task2 = new Task((t) =>
+           {
+                //do...
+           },"hello");
+           task2.Start();
+           //通过Task.Factory.StartNew实例化
+           Task task3 = Task.Factory.StartNew(() =>
+   		{
+   			//do...
+   		});
+           //Task.Run将任务放在线程池队列，返回并启动一个Task
+   		Task task4 = Task.Run(() =>
+   		{
+   			//do...
+   		});
+       }
+   }
+   ```
+
+   常用的方法
+
+   | 方法名称       | 说明                                                       |
+   | -------------- | ---------------------------------------------------------- |
+   | ConfigureAwait | 配置一个bool值，指定是否需要await                          |
+   | ContinueWith   | 两个Task之间的顺序关系，指定一个Task的执行顺序在另一个之后 |
+   | Delay          | 延迟完成                                                   |
+   | Dispose        | 释放当前Task所有资源                                       |
+   | FromCanceled   | 创建一个Task，这个任务是因为特定的原因取消                 |
+   | FromException  | 创建一个Task，这个任务是因为特定的原因执行                 |
+   | FromResult     | 创建一个Task，这个任务有特定的返回结果                     |
+   | Run            | 创建并开启一个Task                                         |
+   | Start          | 开启一个Task                                               |
+   | Wait           | 等待当前的Task结束，阻塞线程                               |
+   | WaitAll        | 等待所有的Task结束，阻塞线程，适用于Task[]                 |
+   | WaitAny        | 等待任一的Task结束，阻塞线程，适用于Task[]                 |
+   | WhenAll        | 创建一个Task在所有的Task结束之后，阻塞线程，适用于Task[]   |
+   | WhenAny        | 创建一个Task在任一的Task结束之后，阻塞线程，适用于Task[]   |
+
+   + 委托异步执行
+
+   委托的异步执行主要有两个方法，`BeginInvoke`和`Invoke`。
+
+   ```C#
+   public class Program
+   {
+       private delegate Test();
+       public void Main(string[] args)
+       {
+           Test test = (()=>{});
+           test.BeginInvoke();//不阻塞线程
+           test.EndInvoke();//异步执行结束
+           test.Invoke();//阻塞线程
+       }
+   }
+   ```
+
+4. 线程同步
+
+   + **原子操作`Interlocked`**：所有的方法都是执行一次原子读取或一次写入操作。每个操作都是不可拆分的指令，在32位系统中，int型的数据属于原子的，访问这个数据只需要一条指令操作即可，long型数据是64位，访问这个数据需要2条独立的指令，如果两个线程同时访问这个数据，很有可能得到两个指令叠加的数据。
+
+   + **加锁y`Lock`**：创建一个对象，最好是私有的，在锁开始的时候会对这个对象中的某一个属性进行置位，表示为当前状态为锁状态，其他线程在访问的时候检查到为锁状态时，会在一个队列中排队等待。在当前锁执行完成后，这个属性置位为解锁状态，线程队列会自动分配一个线程继续访问。
+
+   + **添加监视器`Monitor`**：通过`Monitor.Enter()` 和 `Monitor.Exit()`实现排它锁的获取和释放，获取之后独占资源，不允许其他线程访问。还有一个`TryEnter`方法，请求不到资源时不会阻塞等待，可以设置超时时间，获取不到直接返回false。
+
+   + **读写锁`ReadWriterLock`**：一般情况，数据的读操作要多于写操作，让读操作锁为共享锁，多个线程可以并发读取资源，而写操作为独占锁，只允许一个线程操作。
+
+   + **事件`Event`类实现同步**：`EventWaitHandle`类继承自`WaitHandle`，且派生出两个子类`AutoResetEvent`和`ManualResetEvent`，前者自动重置事件，后者手动重置事件。线程中调用`WaitOne`方法，可以使线程暂停，等待状态置位后继续，通过调用`Set`方法置位。
+
+     ```C#
+     AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+     		ManualResetEvent manual = new ManualResetEvent(false);
+     		private void button1_Click(object sender, EventArgs e)
+     		{
+     			Console.WriteLine($"*************Start**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     
+     			Task.Run(() =>
+     			{
+     				Console.WriteLine($"*******start1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     				autoResetEvent.WaitOne();
+     				Console.WriteLine($"*******end1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     			});
+     			Task.Run(() =>
+     			{
+     				Console.WriteLine($"*******start2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     				manual.WaitOne();
+     				Console.WriteLine($"*******end2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     			});
+     			Console.WriteLine($"*************End**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+     		}
+     
+     		private void button2_Click(object sender, EventArgs e)
+     		{
+     			autoResetEvent.Set();
+     			manual.Set();
+     		}
+     ```
+
+   + **信号量Semaphore**：如同计算机基础中的信号量的概念，如果信号量是0，表示当前资源不足，需要等待，线程无法进行访问。当占用资源的线程结束后，释放资源，信号量增加1，此时信号量大于0，表明有资源，线程可以进行访问，当线程开始进行访问资源的时候，信号量减少1.
+
+   + **互斥量`Mutex`**：排他型封锁，独占资源，与信号量的用法差不多
+
+     ```mermaid
+     classDiagram
+     	WaitHandle <|-- Mutex
+     	WaitHandle <|-- Semaphore
+     	WaitHandle <|-- EventWaitHandle
+     	EventWaitHandle <|-- AutoResetEvent
+     	EventWaitHandle <|-- ManualResetEvent
+     ```
+
+     
 
 ## 委托
 

@@ -125,3 +125,134 @@ sql_mode设置的值有错误
 update table_name set '新字段'='旧字段'
 ```
 
+## 添加、删除用户和授权
+
+1. 新建用户
+
+   登录数据库
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   ```
+
+   创建用户
+
+   ```sql
+   mysql>insert into musql.user(Host,User,Password) values("localhost","test",password("1234"));
+   ```
+
+   这就创建了一个用户名为`test`，密码是`1234`的用户。
+
+   + 此处的`localhost`是指用户只能在本地登录，不能在另外一台机器上远程登录。如果要远程登录的话，将`localhost`改为`%`，表示在任何一台电脑上都可以登录。
+
+2. 用户授权
+
+   授权格式：grant 权限 on 数据库.* to 用户名@登录主机 identified by "密码"；
+
+   登录数据库
+
+      ```sql
+      @>musql -u root -p
+      @>[passwd]
+      ```
+   
+   为用户创建一个数据库
+   
+   ```sql
+   mysql>create database testDB;
+   ```
+   
+   授权`test`用户拥有`testDB`数据库的**所有权限**(某个数据库的所有权限)
+   
+   ```sql
+   mysql>grant all privileges on testDB.* to test@localhost identified by '1234';
+   mysql>flush privileges;//刷新系统权限表
+   ```
+   
+   格式：grant 权限 on 数据库.* to 用户名@登录主机 identified by "密码"；
+   
+   授权`test`用户拥有`testDB`数据库的**部分权限**(某个数据库的所有权限)
+   
+   ```sql
+   mysql>grant select,update privileges on testDB.* to test@localhost identified by '1234';
+   mysql>flush privileges;//刷新系统权限表
+   ```
+   
+   授权`test`用户拥有所有数据库的**所有权限**(某个数据库的所有权限)
+   
+   ```sql
+   mysql>grant all privileges on *.* to test@localhost identified by '1234';
+   mysql>flush privileges;//刷新系统权限表
+   ```
+   
+   授权`test`用户拥有所有数据库的**部分权限**(某个数据库的所有权限)
+   
+   ```sql
+   mysql>grant select,update privileges on *.* to test@localhost identified by '1234';
+   mysql>flush privileges;//刷新系统权限表
+   ```
+   
+3. 删除用户
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>Delete FROM user Where User='test' and Host='localhost';
+   mysql>flush privileges;
+   mysql>drop database testDB;//删除用户的数据库
+   mysql>drop user test@'%';//删除账号及权限
+   mysql>drop user test@'localhost';//删除账号及权限
+   ```
+
+4. 修改指定用户密码
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>update mysql.user set password=password('新密码') where User='test' and Host='localhost';
+   mysql>flush privileges;
+   ```
+
+5. 列出所有数据库
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>show databases;
+   ```
+
+6. 切换数据库
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>use '数据库名称'
+   ```
+
+7. 列出所有表
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>show tables;
+   ```
+
+8. 显示数据表结构
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>describe 表名称;
+   ```
+
+9. 删除数据库和数据表
+
+   ```sql
+   @>musql -u root -p
+   @>[passwd]
+   mysql>drop databases 数据库名称;
+   mysql>drop table 表名称;
+   ```
+
+   
