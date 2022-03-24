@@ -9,13 +9,40 @@
 
 2. 基础模型
 
-   ![image-20210414134909679](C:\Users\hspcadmin\AppData\Roaming\Typora\typora-user-images\image-20210414134909679.png)
+   ```mermaid
+   graph LR
+   	subgraph A[绑定目标]
+   		subgraph A1[DependencyObject]
+   			1[依赖项属性]
+   		end
+   	end
+   	subgraph B[绑定源]
+   		2[属性]
+   	end
+   	1 --绑定对象--> 2
+   	2 --绑定对象--> 1
+   ```
 
-   ​	每个绑定有四个组件：绑定目标对象，目标属性(依赖项属性)，绑定源，绑定源值路径
+   每个绑定有四个组件：绑定目标对象，目标属性(依赖项属性)，绑定源，绑定源值路径
 
 3. 数据流方向
 
-   ![image-20210414135119091](C:\Users\hspcadmin\AppData\Roaming\Typora\typora-user-images\image-20210414135119091.png)
+   ```mermaid
+   graph LR
+   	subgraph A[绑定目标]
+   		subgraph A1[DependencyObject]
+   			1[依赖项属性]
+   		end
+   	end
+   	subgraph B[绑定源]
+   		subgraph B1[对象]
+   			2[属性]
+   		end
+   	end
+       1 ==TwoWay=== 2
+       2 --OneWay--> 1
+       1 --OneWayToSource--> 2
+   ```
 
    	1. OneWay：绑定导致对源属性的更改会自动更新目标属性，但是对目标属性的更改不会传播回源属性。
    	2. TwoWay：绑定导致对源属性的更改会自动更新目标属性，而对目标属性的更改会也自动更新源属性。
@@ -23,8 +50,6 @@
    	4. OneTime：源属性初始化目标属性，不传播后续更改。
 
 4. 触发源的更新情况
-
-   ​		![image-20210414135616430](C:\Users\hspcadmin\AppData\Roaming\Typora\typora-user-images\image-20210414135616430.png)
 
    | 名称            | 说明                                                         |
    | --------------- | ------------------------------------------------------------ |
@@ -210,7 +235,24 @@
 
    在应用程序中，使用路由事件可以响应广泛的鼠标和键盘动作，但是，事件是非常低级的元素，在实际应用中，功能被划分为一些高级的任务，可以通过各种不同的动作和用户界面元素触发，包括菜单，上下文菜单，键盘快捷键以及工具栏。这些任务就是所谓的命令，将控件连接到命令，从而不需要重复编写事件处理代码。
 
-   ![image-20210414142043455](C:\Users\hspcadmin\AppData\Roaming\Typora\typora-user-images\image-20210414142043455.png)
+```mermaid
+classDiagram
+	class Window{
+		-numPrint_Click()
+		-window_KeyDown()
+		-cmdPrint_Click()
+	}
+	class ApplicationTasks{
+		+PrintDocument()
+		+SaveDocument()
+		+OpenDocument()
+	}
+	class PrintService{
+		+PrintPage()
+	}
+	Window --> ApplicationTasks
+	ApplicationTasks --> PrintService
+```
 
    1. 命令模型
 
@@ -1310,3 +1352,93 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
 ## 属性
 
+## 字符串的几种拼接方式
+
+1. 简单拼接`+=`
+
+   `string`是引用类型，保留在堆上，而不是栈。用的时候传的的是内存地址，每次修改就会重新创建一个新的对象来存储字符串，原有的会自动回收。
+
+   简单的拼接在一般简单的拼接不会有太大的问题，需要循环拼接的时候，会不断创建新的对象，性能和内存消耗比较大。
+
+2. String.Format()
+
+   ```c#
+   public static String Format(IFormatProvider provider, String format, params Object[] args)
+   {
+       if(format == null || args == null)
+       {
+           throw new ArgumentNullException((format==null)?"format":"args");
+       }
+       StringBuilder sb = new Stringbuilder(format.Length + args.Length * 8);
+       sb.AppendFormat(provider,format,args);
+       return sb.Tostring();
+   }
+   ```
+
+   先创建一个StringBuilder类型的变量，存放新的字符串，比较整洁易于阅读，效率也比较高。
+
+3. string.concat()
+
+   ```c#
+   public String concat(String str)
+   {
+       //追加的字符串长度
+       int otherLen = str.length();
+       //如果追加的字符串长度为0，则不做修改，直接返回原字符串
+       if(otherLen == 0)
+       {
+           return this;
+       }
+       //获取原字符串的字符数组vaue的长度
+       int len = value.length();
+       //将原字符串的字符数组value放到buf字符数组中
+       char buff[] = Arrays.copyOf(value,len + otherLen);
+       //将追加的字符串转化成字符数组，添加到buf中
+       str.getChars(buf,len);
+       //产生一个新的字符串并返回
+       return new String(buf,true);
+   }
+   ```
+
+   整体是一个数组的拷贝，在内存中的处理是原子性的，速度快，最后返回的时候会创建一个`String`对象，每次执行`concat`操作都会创建一个对象，限制了这个方法的速度。
+
+4. Stringbuilder.Append()
+
+   ```c#
+   public AbstractStringBUilder append(String str)
+   {
+       //如果是null值，则把null作为字符串处理
+       if(str == null)
+       {
+           return appendNull();
+       }
+       int len = str.length();
+       //追加后的字符数组长度是否超过当前值
+       ensureCapacityInternal(count + len);
+       //字符串复制到目标数组
+       str.getChars(0,len,value,count);
+       count += len;
+       return this;
+   }
+   private AbstractStringBuilder appendNull()
+   {
+       int c = count;
+       ensureCapacityInternal(c+4);
+       final char[] value = this.value;
+       value[C++] = 'n';
+       value[C++] = 'u';
+       value[C++] = 'l';
+       value[C++] = 'l';
+       return this;
+   }
+   private void ensureCapacityInternal(int minimunCapacity)
+   {
+       //overflow-conscious code
+       if(minimumCapacity - value.length > 0)
+       {
+           expandCapacity(minimumCapacity);//加长，并做数组拷贝
+       }
+   }
+   ```
+
+   整个的`append`方法都在做字符数组的处理，加长、拷贝等，都是基本的数据处理，没有生成对象。只是最后ToString返回一个对象而已，注意这个方法返回的是一个StringBuilder对象实例。

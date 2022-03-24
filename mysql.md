@@ -255,4 +255,10 @@ update table_name set '新字段'='旧字段'
    mysql>drop table 表名称;
    ```
 
-   
+
+## 查询某个表的记录总数
+
+```sql
+SELECT COUNT(*) FROM TABLE_NAME
+```
+
