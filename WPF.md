@@ -1,3 +1,6 @@
+
+# CSharp
+
 ## 数据绑定
 
 1. 数据绑定是一种关系，从源对象提取一些信息，并用这些信息设置目标对象的属性，是应用程序UI与业务逻辑之间建立连接的过程。
@@ -11,16 +14,16 @@
 
    ```mermaid
    graph LR
-   	subgraph A[绑定目标]
-   		subgraph A1[DependencyObject]
-   			1[依赖项属性]
-   		end
-   	end
-   	subgraph B[绑定源]
-   		2[属性]
-   	end
-   	1 --绑定对象--> 2
-   	2 --绑定对象--> 1
+    subgraph A[绑定目标]
+        subgraph A1[DependencyObject]
+         1[依赖项属性]
+        end
+    end
+    subgraph B[绑定源]
+        2[属性]
+    end
+    1 --绑定对象--> 2
+    2 --绑定对象--> 1
    ```
 
    每个绑定有四个组件：绑定目标对象，目标属性(依赖项属性)，绑定源，绑定源值路径
@@ -29,25 +32,25 @@
 
    ```mermaid
    graph LR
-   	subgraph A[绑定目标]
-   		subgraph A1[DependencyObject]
-   			1[依赖项属性]
-   		end
-   	end
-   	subgraph B[绑定源]
-   		subgraph B1[对象]
-   			2[属性]
-   		end
-   	end
+    subgraph A[绑定目标]
+        subgraph A1[DependencyObject]
+            1[依赖项属性]
+        end
+    end
+    subgraph B[绑定源]
+        subgraph B1[对象]
+            2[属性]
+        end
+    end
        1 ==TwoWay=== 2
        2 --OneWay--> 1
        1 --OneWayToSource--> 2
    ```
 
-   	1. OneWay：绑定导致对源属性的更改会自动更新目标属性，但是对目标属性的更改不会传播回源属性。
-   	2. TwoWay：绑定导致对源属性的更改会自动更新目标属性，而对目标属性的更改会也自动更新源属性。
-   	3. OneWayToSource：与OneWay方向相反。
-   	4. OneTime：源属性初始化目标属性，不传播后续更改。
+   1. OneWay：绑定导致对源属性的更改会自动更新目标属性，但是对目标属性的更改不会传播回源属性。
+   2. TwoWay：绑定导致对源属性的更改会自动更新目标属性，而对目标属性的更改会也自动更新源属性。
+   3. OneWayToSource：与OneWay方向相反。
+   4. OneTime：源属性初始化目标属性，不传播后续更改。
 
 4. 触发源的更新情况
 
@@ -59,7 +62,7 @@
 
 5. 创建绑定
 
-   ​	绑定源
+   ​绑定源
 
    1. 在元素上直接设置DataContext属性，从上级继承DataContext值
    2. 通过设置Binding上的Source属性来显示指定绑定源
@@ -125,25 +128,25 @@
 
       优先级从低到高的顺序：
 
-      ​	1). 默认值(由FrameworkPropertyMetadata对象设置的值)
+      ​1). 默认值(由FrameworkPropertyMetadata对象设置的值)
 
-      ​	2). 继承而来的值
+      ​2). 继承而来的值
 
-      ​	3). 来自主题样式的值
+      ​3). 来自主题样式的值
 
-      ​	4). 来自项目样式的值
+      ​4). 来自项目样式的值
 
-      ​	5). 本地值(使用代码或者XAML直接为对象设置的值)
+      ​5). 本地值(使用代码或者XAML直接为对象设置的值)
 
       WPF决定属性值的四个步骤：
 
-      ​	1). 确定基本值
+      ​1). 确定基本值
 
-      ​	2). 如果属性是使用表达式设置的，就对表达式进行求值(目前支持数据绑定和资源)
+      ​2). 如果属性是使用表达式设置的，就对表达式进行求值(目前支持数据绑定和资源)
 
-      ​	3). 如果属性是动画的目标，就应用动画
+      ​3). 如果属性是动画的目标，就应用动画
 
-      ​	4). 运行CoreceValueCallback回调函数来修正属性值
+      ​4). 运行CoreceValueCallback回调函数来修正属性值
 
    3. 具体代码
 
@@ -155,9 +158,9 @@
       meta.DefaultValue = 100;
       meta.CoerceValueCallback = new CoerceCallback(TestPropertyCoerceValueCallback);
       meta.PropertyChangedCallback = new PropertyChangedCallback(TestPropertyPropertyChangedCallback);
-      
+
       TestProperty = DependencyProperty.Register("Test",typeof(int),typeof(CurrentClass),meta,new ValidateValueCallback(TestPropertyValidateValueCallback));
-      
+
       //回调函数,属性注册时执行，属性数据改变时执行
       //验证依赖项属性的值的类型和格式是否有效，有效返回true，无效返回false
       private static bool TestPropertyValidateValueCallback(object value)
@@ -165,20 +168,20 @@
           //具体执行的操作
           return true;
       }
-      
+
       //在ValidateValueCallback之后执行，可以对属性值做详细验证
       private static object TestPropertyCoerceValueCallback(DenpendncyObject sender,object value)
       {
           //这个回调函数必须返回object
           return value;
       }
-      
+
       //属性值发生变化时执行
       private static void TestPropertyChangedCallback(DependencyObject d,DependencyPropertyChangedEventArgs e)
       {
           //最后执行
       }
-      
+
       //包装依赖项属性
       public int Test
       {
@@ -237,21 +240,21 @@
 
 ```mermaid
 classDiagram
-	class Window{
-		-numPrint_Click()
-		-window_KeyDown()
-		-cmdPrint_Click()
-	}
-	class ApplicationTasks{
-		+PrintDocument()
-		+SaveDocument()
-		+OpenDocument()
-	}
-	class PrintService{
-		+PrintPage()
-	}
-	Window --> ApplicationTasks
-	ApplicationTasks --> PrintService
+    class Window{
+        -numPrint_Click()
+        -window_KeyDown()
+        -cmdPrint_Click()
+    }
+    class ApplicationTasks{
+        +PrintDocument()
+        +SaveDocument()
+        +OpenDocument()
+    }
+    class PrintService{
+        +PrintPage()
+    }
+    Window --> ApplicationTasks
+    ApplicationTasks --> PrintService
 ```
 
    1. 命令模型
@@ -272,17 +275,16 @@ classDiagram
           //命令状态改变时引发这个事件
           event EventHandler CanExecuteChanged;
       }
-      
+
       //RoutedCommand
       //唯一一个实现了ICommand接口的类，该类中不包含任何应用程序逻辑，只代表命令。
       //RoutedUICommand类继承自RoutedCommand类，用于具有文本的命令，文本显示在用户界面中的某些地方
       ```
 
-
       命令库
-    
+
       每个应用程序都有大量的命令，但是很多命令是通用的，WPF提供了基本命令库
-    
+
       | 名称                | 说明                                       |
       | ------------------- | ------------------------------------------ |
       | ApplicationCommands | 通用命令，copy,cut,paste...                |
@@ -290,38 +292,37 @@ classDiagram
       | EditingCommands     | 文档编辑命令                               |
       | ComponentCommands   | 由用户界面使用的命令，移动和选择内容的命令 |
       | MediaCommands       | 处理多媒体的命令                           |
-    
+
       开始使用一个命令，必须做三件事：
-    
-      	1. 定义一个命令
-      	2. 定义命令的实现
-      	3. 为命令创建一个触发器
-    
+
+      1. 定义一个命令
+      2. 定义命令的实现
+      3. 为命令创建一个触发器
+
       自定义命令的步骤：
-    
-      	1. 创建命令类：如果没有涉及到业务逻辑，一般使用WPF中RouteCommand类，如果要声明一些复杂的类，可以实现RouteCommand类的继承或者ICommand类。
-    
-        2. 声明命令实例：一般情况下，命令是普遍使用的，在程序中只需要有一个实例即可，单例模式
-        3. 指明命令的源：通常是可以点击的控件
-        4. 指明命令的目标：命令的作用对象
-        5. 设置命令关联：
+
+      1. 创建命令类：如果没有涉及到业务逻辑，一般使用WPF中RouteCommand类，如果要声明一些复杂的类，可以实现RouteCommand类的继承或者ICommand类。
+      2. 声明命令实例：一般情况下，命令是普遍使用的，在程序中只需要有一个实例即可，单例模式
+      3. 指明命令的源：通常是可以点击的控件
+      4. 指明命令的目标：命令的作用对象
+      5. 设置命令关联：
 
    2. 执行命令
 
-      1. 命令源
+      1). 命令源
 
          为了触发命令，需要由命令源，最简单的方法就是将命令关联到实现了ICommandSource接口的控件。
 
          ICommandSource接口定义了三个属性，Command(指向连接的命令，唯一必须)；CommandParameter(提供其他希望随命令发送的数据)；CommadnTarget(确定将在其中执行命令的元素)
 
-   ```xaml
+        ``` xaml
           <button command = "ApplicationCommands.New">New</button>
-   ```
+        ```
 
-      2. 命令绑定
-    
+      2). 命令绑定
+
          当将命令关联到命令源时，命令源会自动禁用
-    
+
          ```C#
          //create the binding
          CommandBinding commandBinding = new CommandBinding(ApplicationCommands.New);
@@ -335,11 +336,10 @@ classDiagram
              MessageBox.Show("new command triggered by " + args.Source.Tostring());
          }
          ```
-​         
 
-   消息和事件
+## 消息和事件
 
-​	消息Message就是用于描述某个事件所发生的信息，事件Event则是用户操作应用程序产生的动作或Windows系统自身所产生的动作。事件是原因，消息是结果，事件产生消息，消息对应事件。
+​消息Message就是用于描述某个事件所发生的信息，事件Event则是用户操作应用程序产生的动作或Windows系统自身所产生的动作。事件是原因，消息是结果，事件产生消息，消息对应事件。
 
 1. 消息基础概念
 
@@ -351,9 +351,9 @@ classDiagram
 
    消息的分类：
 
-   ​	系统消息：操作系统发送出来的消息，消息名称是固定的
+   ​系统消息：操作系统发送出来的消息，消息名称是固定的
 
-   ​	自定义消息：有开发者自己定义，消息名称可以任意定义
+   ​自定义消息：有开发者自己定义，消息名称可以任意定义
 
 ## 路由事件
 
@@ -361,9 +361,9 @@ classDiagram
 
 路由事件出现的三种方式：
 
-	1. 直接路由事件：源于一个元素，不传递给其他元素。
-	2. 冒泡路由事件：在包含层次中向上传递
-	3. 隧道路由事件：在包含层次中向下传递
+1. 直接路由事件：源于一个元素，不传递给其他元素。
+2. 冒泡路由事件：在包含层次中向上传递
+3. 隧道路由事件：在包含层次中向下传递
 
 ```C#
 //定义、注册和封装路由事件
@@ -373,10 +373,10 @@ public abstract class ButtonBase : ContenControl,...
     public static readonly RoutedEvent ClickEvent;
     //The event registration
     /*
-    	第一个参数为路由事件的名称
-    	第二个参数是路由事件的策略，事件的传递方式
-    	第三个参数用于指定事件处理器的类型
-    	第四个参数用于指定事件的宿主是哪种类型
+    第一个参数为路由事件的名称
+    第二个参数是路由事件的策略，事件的传递方式
+    第三个参数用于指定事件处理器的类型
+    第四个参数用于指定事件的宿主是哪种类型
     */
     static ButtonBase()
     {
@@ -422,11 +422,11 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
 ## WPF事件
 
-	1. 生命周期事件：元素被初始化、加载或卸载时发生这些事件
-	2. 鼠标事件：鼠标动作的结果
-	3. 键盘事件：键盘动作的结果
-	4. 手写笔事件：手写笔动作的结果
-	5. 多点触控事件：win7中，一根或者多根手指在多点触控屏幕上触摸的结果
+1. 生命周期事件：元素被初始化、加载或卸载时发生这些事件
+2. 鼠标事件：鼠标动作的结果
+3. 键盘事件：键盘动作的结果
+4. 手写笔事件：手写笔动作的结果
+5. 多点触控事件：win7中，一根或者多根手指在多点触控屏幕上触摸的结果
 
 ## BeginInvoke模型
 
@@ -449,7 +449,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    internal DispatcherOperation BeginInvokeImpl(DispatcherPriority priority, Delegate method, object args, bool isSingleParameter)
    {
        ……
-       DispatcherOperation data = new DispatcherOperation(this, method, priority, args, isSingleParameter) 
+       DispatcherOperation data = new DispatcherOperation(this, method, priority, args, isSingleParameter)
        {
            _item = this._queue.Enqueue(priority, data)
        };
@@ -576,8 +576,6 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
    可以看到`ISynchronizeInvoke`有一个属性，`InvokeRequired`。这个属性就是用来在编程的时候确定，一个对象访问UI控件的时候是否需要使用`Invoke`或者`BeginInvoke`来进行封送。如果不需要那么就可以直接更新。在调用者对象和UI对象同属一个线程的时候这个属性返回`false`。在后面的代码分析中我们可以看到，`Control`类对这一属性的实现就是在判断调用者和控件是否属于同一个线程的。
 
-7. 
-
 ## 多线程
 
 1. 使用线程的理由
@@ -651,7 +649,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
                Contract.EndContractBlock();
                SetStartHelper((Delegate)start,0);  //0 will setup Thread with default stackSize
            }
-    
+
            [System.Security.SecuritySafeCritical]  // auto-generated
            public Thread(ThreadStart start, int maxStackSize) {
                if (start == null) {
@@ -670,7 +668,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
                Contract.EndContractBlock();
                SetStartHelper((Delegate)start, 0);
            }
-    
+
            [System.Security.SecuritySafeCritical]  // auto-generated
            public Thread(ParameterizedThreadStart start, int maxStackSize) {
                if (start == null) {
@@ -703,7 +701,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
            //创建没有参数的线程
            Thread thread1 = new Thread(()=>
            {
-   			//do...
+                //do...
            });
            //创建含有参数的线程
            Thread thread2 = new Thread((Object o)=>
@@ -736,11 +734,11 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
        {
            ThreadPool.QueueUserWorkItem(()=>
            {
-   			//do...
+               //do...
            });
            ThreadPool.QueueUserWorkItem((Obeject o)=>
            {
-   			//do...
+                //do...
            });
        }
    }
@@ -770,14 +768,14 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
            task2.Start();
            //通过Task.Factory.StartNew实例化
            Task task3 = Task.Factory.StartNew(() =>
-   		{
-   			//do...
-   		});
+        {
+             //do...
+        });
            //Task.Run将任务放在线程池队列，返回并启动一个Task
-   		Task task4 = Task.Run(() =>
-   		{
-   			//do...
-   		});
+        Task task4 = Task.Run(() =>
+        {
+             //do...
+        });
        }
    }
    ```
@@ -832,32 +830,32 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    + **事件`Event`类实现同步**：`EventWaitHandle`类继承自`WaitHandle`，且派生出两个子类`AutoResetEvent`和`ManualResetEvent`，前者自动重置事件，后者手动重置事件。线程中调用`WaitOne`方法，可以使线程暂停，等待状态置位后继续，通过调用`Set`方法置位。
 
      ```C#
-     AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-     		ManualResetEvent manual = new ManualResetEvent(false);
-     		private void button1_Click(object sender, EventArgs e)
-     		{
-     			Console.WriteLine($"*************Start**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     
-     			Task.Run(() =>
-     			{
-     				Console.WriteLine($"*******start1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     				autoResetEvent.WaitOne();
-     				Console.WriteLine($"*******end1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     			});
-     			Task.Run(() =>
-     			{
-     				Console.WriteLine($"*******start2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     				manual.WaitOne();
-     				Console.WriteLine($"*******end2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     			});
-     			Console.WriteLine($"*************End**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-     		}
-     
-     		private void button2_Click(object sender, EventArgs e)
-     		{
-     			autoResetEvent.Set();
-     			manual.Set();
-     		}
+
+        AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+        ManualResetEvent manual = new ManualResetEvent(false);
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"*************Start**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            Task.Run(() =>
+            {
+                Console.WriteLine($"*******start1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+                autoResetEvent.WaitOne();
+                Console.WriteLine($"*******end1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            });
+            Task.Run(() =>
+            {
+                Console.WriteLine($"*******start2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+                manual.WaitOne();
+                Console.WriteLine($"*******end2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            });
+            Console.WriteLine($"*************End**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            autoResetEvent.Set();
+            manual.Set();
+        }
+
      ```
 
    + **信号量Semaphore**：如同计算机基础中的信号量的概念，如果信号量是0，表示当前资源不足，需要等待，线程无法进行访问。当占用资源的线程结束后，释放资源，信号量增加1，此时信号量大于0，表明有资源，线程可以进行访问，当线程开始进行访问资源的时候，信号量减少1.
@@ -866,14 +864,12 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
      ```mermaid
      classDiagram
-     	WaitHandle <|-- Mutex
-     	WaitHandle <|-- Semaphore
-     	WaitHandle <|-- EventWaitHandle
-     	EventWaitHandle <|-- AutoResetEvent
-     	EventWaitHandle <|-- ManualResetEvent
+        WaitHandle <|-- Mutex
+        WaitHandle <|-- Semaphore
+        WaitHandle <|-- EventWaitHandle
+        EventWaitHandle <|-- AutoResetEvent
+        EventWaitHandle <|-- ManualResetEvent
      ```
-
-     
 
 ## 委托
 
@@ -884,14 +880,14 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 2. 实例
 
    ```C#
-   public void GreetPeople(string name)
-   {
-       EnglishGreeting(name);
-   }
-   public void EnglishGreeting(stirng name)
-   {
-    	Console.WriteLine("Good Morning, " + name);   
-   }
+    public void GreetPeople(string name)
+    {
+        EnglishGreeting(name);
+    }
+    public void EnglishGreeting(stirng name)
+    {
+        Console.WriteLine("Good Morning, " + name);   
+    }
    ```
 
    上面的例子中是一个实现打招呼的方法，现在假设这个程序需要进行全球化，不是所有的人都能认识英文，需要对程序进行扩展，能实现多国语言的打招呼。
@@ -915,11 +911,11 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    }
    public void EnglishGreeting(stirng name)
    {
-    	Console.WriteLine("Good Morning, " + name);   
+        Console.WriteLine("Good Morning, " + name);   
    }
    public void ChineseGreeting(string name)
    {
-       Console.WriteLine("早上好, " + name); 
+       Console.WriteLine("早上好, " + name);
    }
    ```
 
@@ -960,7 +956,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 
    本例中委托的定义：
 
-       public delegate void GreetingDelegate(string name);
+    `public delegate void GreetingDelegate(string name);`
 
    与上面 EnglishGreeting() 方法的签名对比一下，除了加入了delegate 关键字以外，其余的是不是完全一样？现在，让我们再次改动GreetPeople()方法，如下所示：
 
@@ -1029,7 +1025,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    static void Main(string[] args)
    {
        GreetingDelegate delegate1;
-       delegate1 = EnglishGreeting; 
+       delegate1 = EnglishGreeting;
        delegate1 += ChineseGreeting;
        GreetPeople("Liker", delegate1);
        Console.ReadLine();
@@ -1039,7 +1035,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    {
        GreetingDelegate delegate1;
        delegate1 = EnglishGreeting;
-       delegate1 += ChineseGreeting; 
+       delegate1 += ChineseGreeting;
        delegate1("Liker");
        Console.ReadLine();
    }
@@ -1083,7 +1079,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    {
        GreetingDelegate delegate1;
        delegate1 = EnglishGreeting;
-       delegate1 += ChineseGreeting; 
+       delegate1 += ChineseGreeting;
        delegate1("Liker");
        Console.ReadLine();
    }
@@ -1105,20 +1101,20 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    ```C#
    //声明一个委托
    delegate double Operations(double x);
-   
+
    struct MathOperations
    {
        public static double MultiplyByTwo(double value)
        {
            return value * 2;
        }
-   
+
        public static double Square(double value)
        {
            return value * value;
        }
    }
-   
+
    class Program
    {
        static void Main()
@@ -1128,7 +1124,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
                MathOperations.MultiplyByTwo,
                MathOperations.Square
            };
-   
+
            for (int i = 0; i < operations.Length; i++)
            {
                Console.WriteLine("Using operations[{0}]:", i);
@@ -1137,7 +1133,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
                Console.ReadLine();
            }
        }
-   
+
        static void DisplayNumber(Operations action, double value)
        {
            double result = action(value);
@@ -1147,9 +1143,9 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    }
    ```
 
-   **Action<T>和Func<T>**
+   **Action\<T>和Func\<T>**
 
-   使用委托时，除了为每个参数和返回类型定义一个新委托类型之外，还可以使用.NET Framework提供的泛型委托Action<T>和Func<T>，它们提供了从无参一直到最多16个参数的重载，如果方法需要获取16个以上的参数，就必须定义自己的委托类型，但这种情况应该是及其罕见的。其中Action<T>类可以调用没有返回值的方法，Func<T>允许调用带返回类型的方法。
+   使用委托时，除了为每个参数和返回类型定义一个新委托类型之外，还可以使用.NET Framework提供的泛型委托Action\<T>和Func\<T>，它们提供了从无参一直到最多16个参数的重载，如果方法需要获取16个以上的参数，就必须定义自己的委托类型，但这种情况应该是及其罕见的。其中Action\<T>类可以调用没有返回值的方法，Func\<T>允许调用带返回类型的方法。
 
    ```C#
    //带有返回值的方法
@@ -1185,7 +1181,7 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    {
        Func<int,int,int> func = delegate(int a, int b)
        {
-         	return a + b;  
+           return a + b;  
        };
        Console.WriteLine(func(3,4));
    }
@@ -1216,6 +1212,15 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    generic paradigm通用的范式，是类型的模板。作为模板的类通过实例化产生不同的对象，而泛型是通过不同的类型实参产生不同的类型。
 
    我们在编程时，经常会遇到功能非常相似的模块，只是处理的数据不一样。
+
+   泛型的几种优点和缺点：
+
+   1. 性能
+      泛型的一个主要优点就是性能。System.Collections和System.Collections.Generic名称控件的泛型和非泛型集合类，对值类型使用非泛型集合类，在把值类型转换为引用类型，和把引用类型转换为值类型时，需要进行装箱和拆箱操作。
+   2. 类型安全
+   3. 二级制代码重用
+   4. 代码的扩展
+   5. 命名约定
 
    **5种泛型：类，结构，接口，委托和方法**
 
@@ -1285,8 +1290,8 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    | T : struct      | 类型参数必须是值类型                                         |
    | T : class       | 类型参数必须是引用类型，也适用于类，接口，委托或数组类型     |
    | T : new()       | 类型参数必须是具有无参数的公共构造函数，与其他约束一起使用时置于最后 |
-   | T : <Base>      | 类型参数必须是指定的基类或派生自指定的基类                   |
-   | T : <Interface> | 类型参数必须是指定的接口或实现指定的接口，可以多接口约束，约束接口也可以使泛型的 |
+   | T : \<Base>      | 类型参数必须是指定的基类或派生自指定的基类                   |
+   | T : \<Interface> | 类型参数必须是指定的接口或实现指定的接口，可以多接口约束，约束接口也可以使泛型的 |
 
    ```C#
    //指定泛型参数为值类型
@@ -1343,8 +1348,6 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
        }
    }
    ```
-
-   
 
 ## 事件
 
@@ -1442,3 +1445,121 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
    ```
 
    整个的`append`方法都在做字符数组的处理，加长、拷贝等，都是基本的数据处理，没有生成对象。只是最后ToString返回一个对象而已，注意这个方法返回的是一个StringBuilder对象实例。
+
+## 静态构造函数
+
+   静态构造函数用于初始化任何静态数据，或执行仅需执行一次的特定操作。将在创建第一个实例或引用任何静态成员之前自动调用静态构造函数。
+
+   ``` C#
+      class SimpleClass
+      {
+          // Static variable that must be initialized at run time.
+          static readonly long baseline;
+
+          // Static constructor is called at most one time, before any
+          // instance constructor is invoked or member is accessed.
+          static SimpleClass()
+          {
+              baseline = DateTime.Now.Ticks;
+          }
+      }
+   ```
+
+1. 备注
+
+   + 静态构造函数不适用访问修饰符或不具有参数。
+   + 类或结构只能有一个静态构造函数。
+   + 静态构造函数不能继承或重载。
+   + 静态构造函数不能直接调用，并且仅应由公共语言运行时CLR调用，可以自动调用它们。
+   + 用户无法控制在程序中执行静态构造函数的时间。
+   + 自动调用静态构造函数。 它在创建第一个实例或引用该类（不是其基类）中声明的任何静态成员之前初始化类。 静态构造函数在实例构造函数之前运行。 调用（而不是分配）分配给事件或委托的静态方法时，将调用类型的静态构造函数。 如果静态构造函数类中存在静态字段变量初始值设定项，它们将以在类声明中显示的文本顺序执行。 初始值设定项紧接着执行静态构造函数之前运行。
+   + 如果未提供静态构造函数来初始化静态字段，会将所有静态字段初始化为其默认值，如 C# 类型的默认值中所列。
+   + 如果静态构造函数引发异常，运行时将不会再次调用该函数，并且类型在应用程序域的生存期内将保持未初始化。 大多数情况下，当静态构造函数无法实例化一个类型时，或者当静态构造函数中发生未经处理的异常时，将引发 TypeInitializationException 异常。 对于未在源代码中显式定义的静态构造函数，故障排除可能需要检查中间语言 (IL) 代码。
+   + 静态构造函数的存在将防止添加 BeforeFieldInit 类型属性。 这将限制运行时优化。
+   + 声明为 static readonly 的字段可能仅被分配为其声明的一部分或在静态构造函数中。 如果不需要显式静态构造函数，请在声明时初始化静态字段，而不是通过静态构造函数，以实现更好的运行时优化。
+   + 运行时在单个应用程序域中多次调用静态构造函数。 该调用是基于特定类型的类在锁定区域中进行的。 静态构造函数的主体中不需要其他锁定机制。 若要避免死锁的风险，请勿阻止静态构造函数和初始值设定项中的当前线程。 例如，不要等待任务、线程、等待句柄或事件，不要获取锁定，也不要执行阻止并行操作，如并行循环、Parallel.Invoke 和并行 LINQ 查询。
+
+2. 用法
+
+   + 静态构造函数的一种典型用法是在类使用日志文件且将构造函数用于将条目写入到此文件中时使用。
+   + 静态构造函数对于创建非托管代码的包装类也非常有用，这种情况下构造函数可调用 LoadLibrary 方法。
+   + 也可在静态构造函数中轻松地对无法在编译时通过类型参数约束检查的类型参数强制执行运行时检查。
+
+3. 示例
+
+   ```C#
+     public class Bus
+     {
+         // Static variable used by all Bus instances.
+         // Represents the time the first bus of the day starts its route.
+         protected static readonly DateTime globalStartTime;
+
+         // Property for the number of each bus.
+         protected int RouteNumber { get; set; }
+
+         // Static constructor to initialize the static variable.
+         // It is invoked before the first instance constructor is run.
+         static Bus()
+         {
+             globalStartTime = DateTime.Now;
+
+             // The following statement produces the first line of output,
+             // and the line occurs only once.
+             Console.WriteLine("Static constructor sets global start time to {0}",
+                 globalStartTime.ToLongTimeString());
+         }
+
+         // Instance constructor.
+         public Bus(int routeNum)
+         {
+             RouteNumber = routeNum;
+             Console.WriteLine("Bus #{0} is created.", RouteNumber);
+         }
+
+         // Instance method.
+         public void Drive()
+         {
+             TimeSpan elapsedTime = DateTime.Now - globalStartTime;
+
+             // For demonstration purposes we treat milliseconds as minutes to simulate
+             // actual bus times. Do not do this in your actual bus schedule program!
+             Console.WriteLine("{0} is starting its route {1:N2} minutes after global start time {2}.",
+                                this.RouteNumber,
+                                elapsedTime.Milliseconds,
+                                globalStartTime.ToShortTimeString());
+        }
+    }
+
+     class TestBus
+    {
+         static void Main()
+         {
+             // The creation of this instance activates the static constructor.
+             Bus bus1 = new Bus(71);
+
+             // Create a second bus.
+             Bus bus2 = new Bus(72);
+
+             // Send bus1 on its way.
+             bus1.Drive();
+
+             // Wait for bus2 to warm up.
+             System.Threading.Thread.Sleep(25);
+
+             // Send bus2 on its way.
+             bus2.Drive();
+
+             // Keep the console window open in debug mode.
+             Console.WriteLine("Press any key to exit.");
+             Console.ReadKey();
+        }
+    }
+    /* Sample output:
+         Static constructor sets global start time to 3:57:08 PM.
+         Bus #71 is created.
+         Bus #72 is created.
+         71 is starting its route 6.00 minutes after global start time 3:57 PM.
+         72 is starting its route 31.00 minutes after global start time 3:57 PM.
+    */
+
+   ```
