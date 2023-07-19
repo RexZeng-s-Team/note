@@ -62,7 +62,7 @@
 
 5. 创建绑定
 
-   ​绑定源
+   绑定源
 
    1. 在元素上直接设置DataContext属性，从上级继承DataContext值
    2. 通过设置Binding上的Source属性来显示指定绑定源
@@ -128,25 +128,25 @@
 
       优先级从低到高的顺序：
 
-      ​1). 默认值(由FrameworkPropertyMetadata对象设置的值)
+      1). 默认值(由FrameworkPropertyMetadata对象设置的值)
 
-      ​2). 继承而来的值
+      2). 继承而来的值
 
-      ​3). 来自主题样式的值
+      3). 来自主题样式的值
 
-      ​4). 来自项目样式的值
+      4). 来自项目样式的值
 
-      ​5). 本地值(使用代码或者XAML直接为对象设置的值)
+      5). 本地值(使用代码或者XAML直接为对象设置的值)
 
       WPF决定属性值的四个步骤：
 
-      ​1). 确定基本值
+      1). 确定基本值
 
-      ​2). 如果属性是使用表达式设置的，就对表达式进行求值(目前支持数据绑定和资源)
+      2). 如果属性是使用表达式设置的，就对表达式进行求值(目前支持数据绑定和资源)
 
-      ​3). 如果属性是动画的目标，就应用动画
+      3). 如果属性是动画的目标，就应用动画
 
-      ​4). 运行CoreceValueCallback回调函数来修正属性值
+      4). 运行CoreceValueCallback回调函数来修正属性值
 
    3. 具体代码
 
@@ -339,7 +339,7 @@ classDiagram
 
 ## 消息和事件
 
-​消息Message就是用于描述某个事件所发生的信息，事件Event则是用户操作应用程序产生的动作或Windows系统自身所产生的动作。事件是原因，消息是结果，事件产生消息，消息对应事件。
+消息Message就是用于描述某个事件所发生的信息，事件Event则是用户操作应用程序产生的动作或Windows系统自身所产生的动作。事件是原因，消息是结果，事件产生消息，消息对应事件。
 
 1. 消息基础概念
 
@@ -351,9 +351,9 @@ classDiagram
 
    消息的分类：
 
-   ​系统消息：操作系统发送出来的消息，消息名称是固定的
+   系统消息：操作系统发送出来的消息，消息名称是固定的
 
-   ​自定义消息：有开发者自己定义，消息名称可以任意定义
+   自定义消息：有开发者自己定义，消息名称可以任意定义
 
 ## 路由事件
 
@@ -428,1138 +428,1090 @@ img.RemoveHandler(Image.MouseUpEvent, new MouseButtonEventHandler(img_MouseUp));
 4. 手写笔事件：手写笔动作的结果
 5. 多点触控事件：win7中，一根或者多根手指在多点触控屏幕上触摸的结果
 
-## BeginInvoke模型
+## 属性
 
-1. BeginInvoke()函数定义
+## 模板
 
-   ```c#
-   public DispatcherOperation BeginInvoke(DispatcherPriority priority, Delegate method, Object arg, params Object[] args)
-   {
-       return this.BeginInvokeImpl(priority, method, this.CombineParameters(arg, args), false);
-   }
-   ```
+开发人员在进行桌面应用开发的时候，使用控件必须在方便性和灵活性之间做出选择。所谓的方便性，就是使用预先设定好的控件，可以减少一定的开发过程。但是这些控件几乎具有固定的可视化外观，可定制性有限。所谓的灵活性，就是希望实现一些更特殊效果的自定义控件。
 
-   这个函数用来向WPF系统中插入一个由method参数所传入的工作项。这些插入到系统中的工作项将根据priority参数所指定的优先级进行排列。第三个和第四个参数将被作为参数传递进method所表示的工作项中。
+最终，通过**样式**和**模板**解决了控件的自定义问题。也就是说，模板的主要功能就是对不同的控件进行定制化，修改控件的各种属性。
 
-   这个函数的返回值是DispatcherOperation类型的一个实例，通过该实例，开发人员可以和系统中的工作项进行交互。DispatcherOperation实例的priority属性用来操作插入工作项的优先级，一个工作项的优先级越高，就会被越早执行。同时，在代码中，开发人员可以通过DispatcherOperation类的status属性来访问当前工作项的状态，在工作项执行完毕之后，可以通过Result属性得到工作项的运行结果。
-
-   BeginInvoke()函数的内部实现中可以看出，在每次调用BeginInvoke()函数的时候，其内部都会调用BeginInvokeImp()函数。在调用BeginInvokeImpl()函数之前，WPF内部将通过CombineParameters()函数将传入的参数arg与args合并。因此在调用BeginInvoke()函数的时候，您并不需要担心参数arg与args之间的区别。
-
-   ```c#
-   internal DispatcherOperation BeginInvokeImpl(DispatcherPriority priority, Delegate method, object args, bool isSingleParameter)
-   {
-       ……
-       DispatcherOperation data = new DispatcherOperation(this, method, priority, args, isSingleParameter)
-       {
-           _item = this._queue.Enqueue(priority, data)
-       };
-       this.RequestProcessing();
-       ……
-       return data;
-   }
-   private bool RequestProcessing()
-   {
-        DispatcherPriority maxPriority = this._queue.MaxPriority;
-        switch (maxPriority)
-        {
-            case DispatcherPriority.Invalid:
-            case DispatcherPriority.Inactive:
-                return true;
-        }
-        if (_foregroundPriorityRange.Contains(maxPriority))
-        {
-            return this.RequestForegroundProcessing();
-        }
-        return this.RequestBackgroundProcessing();
-   }
-   ```
-
-   DispatcherPriority枚举
-
-   | Name            | Value | Description                                            |
-   | --------------- | ----- | ------------------------------------------------------ |
-   | ApplicationIdle | 2     | 在应用程序空闲时处理操作                               |
-   | Background      | 4     | 在完成所有其他非空闲操作后处理操作                     |
-   | ContextIdle     | 3     | 在完成后台操作处理操作                                 |
-   | DataBind        | 8     | 按与数据绑定相同的优先级处理操作                       |
-   | Inactive        | 0     | 操作未处理                                             |
-   | Input           | 5     | 按与输入相同的优先级处理                               |
-   | Invalid         | -1    | 无效的优先级                                           |
-   | Loaded          | 6     | 在布局和呈现已完成，即将按输入优先级处理项之前处理操作 |
-   | Normal          | 9     | 按正常优先级处理操作，典型的应用程序优先级             |
-   | Render          | 7     | 与呈现相同的优先级处理操作                             |
-   | send            | 10    | 在其他异步操作之前处理操作，最高优先级                 |
-   | systemIdle      | 1     | 在系统空闲时处理操作                                   |
-
-   在BeginInvokeImpl()函数中，系统将首先创建一个DispatcherOperation类的实例，用来记录当前所有请求执行的任务的信息，将该实例记录在成员`_queue`中，`_queue`会根据传入的优先级`priority`在内部对各个任务进行排列。然后，WPF就调用了`RequestBackgroundProcessing()`函数请求异步执行该任务。
-
-2. RequestBackgroundProcessing()方法定义
+1. 逻辑树和可视化树
 
    ```C#
-   private bool RequestProcessing()
+   <Window x:Class="WpfApp1.MainWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:local="clr-namespace:WpfApp1"
+           mc:Ignorable="d"
+           Title="MainWindow" Height="450" Width="800">
+       <Grid>
+           <StackPanel>
+               <Button Content="逻辑树" Click="Button_Click"/>
+               <Button Content="可视化树" Click="Button_Click_1"/>
+           </StackPanel>
+       </Grid>
+   </Window>
+   ```
+
+   这个例子中，很简单的界面布局，在窗口中嵌套了一个`StackPanel`控件，在`StackPanel`控件中放置了两个`Button`控件。
+
+   添加的元素分类称为**逻辑树**，下面的图展示这种情况下的逻辑树。
+
+   可视化树是逻辑树的扩展版本，将元素分成更小的部分。
+
+   ```mermaid
+   graph TB
+   	Window --- StackPanel --- Button
+   	StackPanel --- Button1
+   	Button --- String
+   	Button1 --- String1
+   ```
+
+   
+
+   ```mermaid
+   graph TB
+   	Window --- StackPanel --- Button
+   	StackPanel --- Button1
+   	Button --- ButtonChrome --- ContentPresenter --- TextBlock --- String
+   	Button1 --- ButtonChrome1 --- ContentPresenter1 --- TextBlock1 --- String1
+   ```
+
+   逻辑树的作用：描述了界面的整体框架，WPF大部分特性都是通过逻辑树进行工作的
+
+   可视化树的作用：描述了界面的所有细节，使用样式可以改变视觉树上的元素。
+
+2. 模板类型
+
+   在WPF中，实际上有三种类型的模板，所有这些模板都继承自`FrameworkTemplate`基类。一个是控件模板(`ControlTemplate`类)，一个是数据模板(`DataTemplate`类和`HierarchicalDataTemplate`类)，以及更特殊的面板模板(`ItemsPanelTemplate`类)。
+
+## 触发器
+
+WPF中有个主题，就是以声明方式扩展代码的功能。当使用样式、资源或数据绑定时，讲发现即使不使用代码，也能完成不少工作。触发器是另一个实现这种功能的例子。使用触发器，可自动完成简单的样式改变，而这通常需要使用样板事件处理逻辑。
+
+| 名称             | 说明                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| Trigger          | 一种最简单的触发器。可以监测依赖项属性的变化，然后使用设置器改变样式 |
+| MultiTrigger     | 联合了多个条件，只有满足了所有这些条件，才会启动触发器       |
+| DataTrigger      | 使用数据绑定，监测的是任意绑定数据的变化                     |
+| MultiDataTrigger | 联合多个数据触发器                                           |
+| EventTrigger     | 最复杂的触发器，当事件发生时，这种触发器应用动画             |
+
+1. 简单触发器
+
+   示例：界面上有一个`TextBlock`，设置其`Foreground`属性为蓝色。添加一个触发器，监听的属性是`IsMouseOver`，这个属性发生变为`True`时，将`Foreground`属性改为红色，并增加下划线，字体变大。
+
+   ```xaml
+   <!--静态资源，添加样式-->
+   <Window.Resources>
+       <Style x:Key="TB" TargetType="TextBlock">
+           <Setter Property="Foreground" Value="Blue"/>
+           <Style.Triggers>
+               <Trigger Property="IsMouseOver" Value="True">
+                   <Setter Property="FontWeight" Value="ExtraBlack"/>
+                   <Setter Property="Foreground" Value="Red" />
+                   <Setter Property="TextDecorations" Value="Underline" />
+               </Trigger>
+           </Style.Triggers>
+       </Style>
+   </Window.Resources>
+   <!--界面代码，添加一个控件-->
+   <Grid>
+       <StackPanel>
+           <TextBlock Style="{StaticResource TB}" Text="www.baidu.com" TextAlignment="Center" FontSize="28"/>
+       </StackPanel>
+   </Grid>
+   ```
+
+   属性`IsMouseOver`的意思是鼠标悬浮在控件上的时候，其值为`true`。
+
+   方案一
+
+   ```xaml
+   <Border Width="100" Height="30" BorderBrush="Blue" BorderThickness="3">
+       <Border.Style>
+           <Style TargetType="Border">
+               <Style.Setters>
+                   <Setter Property="Background" Value="Green" />
+               </Style.Setters>
+               <Style.Triggers>
+                   <Trigger Property="IsMouseOver" Value="True">
+                   	<Setter Property="BorderBrush" Value="Red" />
+                       <Setter Property="BorderThickness" Value="3" />
+                   </Trigger>
+               </Style.Triggers>
+           </Style>
+       </Border.Style>
+   </Border>
+   ```
+
+   方案二
+
+   ```xaml
+   <Border Width="100" Height="30">
+       <Border.Style>
+           <Style TargetType="Border">
+               <Style.Setters>
+                   <Setter Property="Background" Value="Green" />
+                   <Setter Property="BorderBrush" Value="Blue" />
+                   <Setter Property="BorderThickness" Value="3" />
+               </Style.Setters>
+               <Style.Triggers>
+                   <Trigger Property="IsMouseOver" Value="True">
+                   	<Setter Property="BorderBrush" Value="Red" />
+                       <Setter Property="BorderThickness" Value="3" />
+                   </Trigger>
+               </Style.Triggers>
+           </Style>
+       </Border.Style>
+   </Border>
+   ```
+
+   对比这两种写法，不同的地方是`Border`元素的`BorderBrush`属性和`BorderThickness`属性的声明方式，按照方案一运行后边框一直显示最开始设置的蓝色，方案二在运行时鼠标移入时边框颜色会变成红色。
+
+   为什么会出现这种情况呢？我们进一步探索和验证
+
+   方案三
+
+   ```xaml
+   <Border Width="100" Height="30" BorderBrush="Orange" BorderThickness="3">
+       <Border.Style>
+           <Style TargetType="Border">
+               <Style.Setters>
+                   <Setter Property="Background" Value="Green" />
+                   <Setter Property="BorderBrush" Value="Blue" />
+                   <Setter Property="BorderThickness" Value="3" />
+               </Style.Setters>
+               <Style.Triggers>
+                   <Trigger Property="IsMouseOver" Value="True">
+                   	<Setter Property="BorderBrush" Value="Red" />
+                       <Setter Property="BorderThickness" Value="3" />
+                   </Trigger>
+               </Style.Triggers>
+           </Style>
+       </Border.Style>
+   </Border>
+   ```
+
+   在方案二的基础上，加入两个本地属性，设置为橙色。运行起来之后，边框的颜色一直显示为橙色。
+
+   因为WPF中允许多个地方设置依赖属性的值，这就涉及到优先级的问题，也就是说本地属性的优先级要高于`Setter`设置的值，而默认`Style.Setter`的优先级又高于`Style.Trigger`中设置的值，这种优先级在所有的触发器中都适用。
+
+   关于依赖属性的设置值的优先级如图(优先级从左到右)
+
+   ```mermaid
+   graph TB
+   	动画
+       绑定
+       本地值
+   	自定义StyleTrigger
+   	自定义TemplateTrigger
+       自定义StyleSetter
+   	默认StyleTrigger
+       默认StyleSetter
+       继承值
+       默认值
+   ```
+
+   当多个触发器设置同一个属性值的时候，触发器在标记中的排列顺序决定了最终显示的效果。
+
+2. 多条件触发器
+
+   就是普通触发器进行简单的组合，然后进行`&&`运算，当所有条件都满足时发出`Setter`设置的属性
+
+   ```xaml
+   <CheckBox>
+   	<CheckBox.Style>
+       	<Style.Setters>
+           	<Setter Property="BorderBrush" Value="Blue" />
+               <Setter Property="BorderThickness" Value="3" />
+           </Style.Setters>
+           <Style.Triggers>
+           	<MultiTrigger>
+               	<MultiTrigger.Conditions>
+                   	<Condition Property="IsVisible" Value="True" />
+                       <Condition Property="IsChecked" Value="False" />
+                   </MultiTrigger.Conditions>
+                   <MultiTrigger.Setters>
+                   	<Setter Property="BorderBrush" Value="Red" />
+                       <Setter Property="BorderThickness" Value="3" />
+                   </MultiTrigger.Setters>
+               </MultiTrigger>
+           </Style.Triggers>
+       </CheckBox.Style>
+   </CheckBox>
+   ```
+
+   这种情况下，只有当控件处于可见状态并且选中时，复选框的边框呈现红色。
+
+3. 数据触发器
+
+   和简单触发器一样，当到达设置的某个条件时，进行样式的更改，或者动画的触发。
+
+   ```xaml
+   <TextBox Margin="16 0 0 0" Width="80">
+   	<TextBox.Style>
+       	<Style TargetType="TextBox">
+           	<Style.Setters>
+               	<Setter Property="Foreground" Value="Green" />
+               </Style.Setters>
+               <Style.Triggers>
+               	<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=Text}" Value="5">
+                   	<Setter Property="Foreground" Value="OrangeRed" />
+                   </DataTrigger>
+               </Style.Triggers>
+           </Style>
+       </TextBox.Style>
+   </TextBox>
+   ```
+
+   实例中展示的意思是，当文本框中输入的数字是5的时候将字体颜色设置为橙红色，其余时候为绿色。
+
+4. 多条件数据触发器
+
+   在数据绑定中，触发条件可以使用绑定，这就意味着触发条件可以是多个，除了绑定自身的属性之外，还可以绑定其他元素的属性，使用`ElementName`进行绑定，或者我们干脆直接绑定后台属性。
+
+5. 事件触发器
+
+   事件触发器和其他几个触发器相比是一个比较特殊的触发器，使用的目的不是为了直接改变某个依赖属性的值，而是缓慢改变，具有一个动画效果，用于触发一段动画。
+
+## 实现`MVVM`
+
+   在winform中，基于事件实现，下面的例子是wpf项目，基于事件实现的计算器
+
+   ```c#
+   //wpf中，界面布局使用XAML文件格式
+   <Window x:Class="WpfCalc.MainWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:local="clr-namespace:WpfCalc"
+           mc:Ignorable="d"
+           FontSize="18"
+           Title="MainWindow" Height="450" Width="800">
+       <Grid>
+           <StackPanel>
+               <StackPanel Orientation="Horizontal">
+                   <TextBlock>
+                       <TextBlock.Text>第一个数</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtNumber1" Width="200">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                   <TextBlock>
+                       <TextBlock.Text>第二个数</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtNumber2" Width="200">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                   <TextBlock>
+                       <TextBlock.Text>结果</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtResult" Width="200">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel HorizontalAlignment="Left" Margin="0,10,0,0">
+                   <Button Click="Button_Click">
+                       <Button.Content>计算</Button.Content>
+                       <Button.Width>200</Button.Width>                    
+                   </Button>
+               </StackPanel>
+           </StackPanel>
+       </Grid>
+   </Window>
+   
+   ```
+
+   ```c#
+   using System.Windows;
+   
+   namespace WpfCalc
    {
-       DispatcherPriority maxPriority = this._queue.MaxPriority;
-       switch (maxPriority)
+       /// <summary>
+       /// Interaction logic for MainWindow.xaml
+       /// </summary>
+       public partial class MainWindow : Window
        {
-           case DispatcherPriority.Invalid:
-           case DispatcherPriority.Inactive:
+           public MainWindow()
+           {
+               InitializeComponent();
+           }
+   
+           private void Button_Click(object sender, RoutedEventArgs e)
+           {
+               this.txtResult.Text = int.Parse(this.txtNumber1.Text) + int.Parse(this.txtNumber2.Text) + "";
+           }
+       }
+   }
+   ```
+
+   这个例子比较明显看出的是，按钮的`click`事件直接触发的方法中，获取的是某一个或几个界面控件的值。
+
+   手动实现一个`WPF+MVVM`的计算器
+
+   界面设计
+
+   ```c#
+   <Window x:Class="WpfMVVMCalc.MainWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:local="clr-namespace:WpfMVVMCalc"
+           mc:Ignorable="d"
+           Title="MainWindow" Height="450" Width="800">
+       <Window.DataContext>
+           local.MainWindowViewModel
+       </Window.DataContext>
+       <Grid>
+           <StackPanel>
+               <StackPanel Orientation="Horizontal">
+                   <TextBlock>
+                       <TextBlock.Text>第一个数</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtNumber1" Width="200" Text="{Binding Number1}">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                   <TextBlock>
+                       <TextBlock.Text>第二个数</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtNumber2" Width="200" Text="{Binding Number2}">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                   <TextBlock>
+                       <TextBlock.Text>结果</TextBlock.Text>
+                   </TextBlock>
+                   <TextBox x:Name="txtResult" Width="200" Text="{Binding Result}">
+                   </TextBox>
+               </StackPanel>
+               <StackPanel HorizontalAlignment="Left" Margin="0,10,0,0">
+                   <Button Command="{Binding GetResult}">
+                       <Button.Content>计算</Button.Content>
+                       <Button.Width>200</Button.Width>
+                   </Button>
+               </StackPanel>
+           </StackPanel>
+       </Grid>
+   </Window>
+   ```
+
+   ```c#
+   using System.Windows;
+   
+   namespace WpfMVVMCalc
+   {
+       /// <summary>
+       /// Interaction logic for MainWindow.xaml
+       /// </summary>
+       public partial class MainWindow : Window
+       {
+           public MainWindow()
+           {
+               InitializeComponent();
+               //数据上下文，供数据绑定使用
+               this.DataContext = new MainWindowViewModel();
+           }
+       }
+   }
+   ```
+
+   关键的代码，`viewmodel`中的属性，供界面展示使用，按钮的事件绑定需要实现`ICommand`接口，绑定的属性的值发生变化时需要通知界面重新渲染改变，这个功能需要实现接口`INotifyPropertyChanged`接口
+
+   ```C#
+   using System;
+   using System.Collections.Generic;
+   using System.ComponentModel;
+   using System.Linq;
+   using System.Text;
+   using System.Threading.Tasks;
+   
+   namespace WpfMVVMCalc
+   {
+       public class MainWindowViewModel : INotifyPropertyChanged
+       {
+           private int _number1 = 12;
+   
+           public int Number1
+           {
+               get { return _number1; }
+               set { _number1 = value; }
+           }
+   
+           private int _number2 = 11;
+   
+           public int Number2
+           {
+               get { return _number2; }
+               set { _number2 = value; }
+           }
+   
+           private int _result = 23;
+   
+           /// <summary>
+           /// 实现INotifyPropertyChanged接口，当绑定属性值发生变化时通知界面
+           /// </summary>
+           public event PropertyChangedEventHandler? PropertyChanged;
+   
+           public void OnPropertyChanged(string propertyName)
+           {
+               if (PropertyChanged != null)
+               {
+                   PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+               }
+           }
+   
+           public int Result
+           {
+               get { return _result; }
+               set { _result = value; OnPropertyChanged(nameof(Result)); }
+           }
+   
+           public ReplayCommand GetResult
+           {
+               get => new()
+               {
+                   DoExecute = new Action<object>(CalcSum)
+               };
+           }
+   
+           private void CalcSum(object obj)
+           {
+               this.Result = _number1 + _number2;
+           }
+       }
+   }
+   
+   
+   using System;
+   using System.Collections.Generic;
+   using System.Linq;
+   using System.Text;
+   using System.Threading.Tasks;
+   using System.Windows.Input;
+   
+   namespace WpfMVVMCalc
+   {
+       /// <summary>
+       /// 命令的基础类
+       /// </summary>
+       public class ReplayCommand : ICommand
+       {
+           /// <summary>
+           /// 事件
+           /// </summary>
+           public event EventHandler? CanExecuteChanged;
+   
+           /// <summary>
+           /// 是否可以执行的属性
+           /// </summary>
+           public Func<object, bool>? CanExecution
+           {
+               set; 
+               get;
+           }
+   
+           /// <summary>
+           /// 事件触发执行的委托
+           /// </summary>
+           public Action<object>? DoExecute
+           {
+               set;
+               get;
+           }
+   
+           /// <summary>
+           /// 检查当前的事件是否执行
+           /// 如果绑定事件对应的界面控件IsEnable=false时，事件将不执行
+           /// </summary>
+           /// <param name="parameter"></param>
+           /// <returns></returns>
+           /// <exception cref="NotImplementedException"></exception>
+           public bool CanExecute(object? parameter)
+           {
+               if (CanExecution != null)
+               {
+                   CanExecute(parameter);
+               }
+   
                return true;
-       }
-       if (_foregroundPriorityRange.Contains(maxPriority))
-       {
-           return this.RequestForegroundProcessing();
-       }
-       return this.RequestBackgroundProcessing();
-   }
-   ```
-
-   这个方法中，如果优先级是`Invalid`和`Inactive`的时候，直接返回true，不执行具体的操作。接下来，WPF会根据优先级是否存在于`_foregroundPriorityRange`来决定需要调用的是`RequestForegroundProcessing()`还是`RequestBackgroundProcessing()`。但是不管怎样，WPF都将最终调用`RequestForegroundProcessing()`函数。
-
-3. RequestForegroundProcessing()方法
-
-   ```C#
-   private bool RequestForegroundProcessing()
-   {
-       ……
-       return MS.Win32.UnsafeNativeMethods.TryPostMessage(new HandleRef(this, this._window.Value.Handle), _msgProcessQueue, IntPtr.Zero, IntPtr.Zero);
-   }
-   ```
-
-   `BeginInvoke()`函数的执行逻辑实际上非常简单：在调用`BeginInvoke()`函数时，WPF将在成员`_queue`中记录该异步调用的相关信息。接下来，其将向Windows系统发送一个_`msgProcessQueue`消息。那我们可以大胆猜想：对BeginInvoke()函数所传入的回调函数的调用就是在对`_msgProcessQueue`消息的处理中完成的。
-
-4. _msgProcessQueue消息
-
-   ```C#
-   private IntPtr WndProcHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-   {
-       ……
-       else if (msg == _msgProcessQueue)
-       {
-           this.ProcessQueue();
-       }
-       ……
-   }
-   ```
-
-   当`_msgProcessQueue`消息到达时，`ProcessQueue()`函数将被执行。这里的`WndProcHook`就是WPF向当前窗口中添加的消息处理函数钩子。而`ProcessQueue()`函数则调用了`BeginInvoke()`函数所插入到成员`_queue`中的回调函数。
-
-5. ProcessQueue()方法
-
-   ```C#
-   private void ProcessQueue()
-   {
-       ……
-       operation = this._queue.Dequeue();
-       ……
-       if (operation != null)
-       {
-       ……
-           operation.Invoke();
-       ……
-       }
-   }
-   ```
-
-6. Incoke和BeginInvoke的区别
-
-   `Invoke`或者`BeginInvoke`方法都需要一个委托对象作为参数。委托类似于回调函数的地址，因此调用者通过这两个方法就可以把需要调用的函数地址封送给界面线程。这些方法里面如果包含了更改控件状态的代码，那么由于最终执行这个方法的是界面线程，从而避免了竞争条件，避免了不可预料的问题。如果其它线程直接操作界面线程所属的控件，那么将会产生竞争条件，造成不可预料的结果。
-
-   使用`Invoke`完成一个委托方法的封送，就类似于使用`SendMessage`方法来给界面线程发送消息，是一个同步方法。也就是说在`Invoke`封送的方法被执行完毕前，`Invoke方`法不会返回，从而调用者线程将被阻塞。
-
-   使用`BeginInvoke`方法封送一个委托方法，类似于使用`PostMessage`进行通信，这是一个异步方法。也就是该方法封送完毕后马上返回，不会等待委托方法的执行结束，调用者线程将不会被阻塞。但是调用者也可以使用`EndInvoke`方法或者其它类似`WaitHandle`机制等待异步操作的完成。
-
-   但是在内部实现上，`Invoke`和`BeginInvoke`都是用了`PostMessage`方法，从而避免了`SendMessage`带来的问题。而`Invoke`方法的同步阻塞是靠`WaitHandle`机制来完成的。
-
-   如果你的后台线程在更新一个UI控件的状态后不需要等待，而是要继续往下处理，那么你就应该使用`BeginInvoke`来进行异步处理。
-
-   如果你的后台线程需要操作UI控件，并且需要等到该操作执行完毕才能继续执行，那么你就应该使用`Invoke`。否则，在后台线程和主截面线程共享某些状态数据的情况下，如果不同步调用，而是各自继续执行的话，可能会造成执行序列上的问题，虽然不发生死锁，但是会出现不可预料的显示结果或者数据处理错误。
-
-   可以看到`ISynchronizeInvoke`有一个属性，`InvokeRequired`。这个属性就是用来在编程的时候确定，一个对象访问UI控件的时候是否需要使用`Invoke`或者`BeginInvoke`来进行封送。如果不需要那么就可以直接更新。在调用者对象和UI对象同属一个线程的时候这个属性返回`false`。在后面的代码分析中我们可以看到，`Control`类对这一属性的实现就是在判断调用者和控件是否属于同一个线程的。
-
-## 多线程
-
-1. 使用线程的理由
-
-   + 可以使用线程将代码同其他代码隔离，提高应用程序的可靠性
-   + 可以使用线程来简化编码
-   + 可以使用线程来实现并发执行
-
-2. 基本知识
-
-   + 进程和线程：进程是操作系统执行程序的基本单位，拥有应用程序的资源，进程的资源被线程共享，线程不拥有资源
-
-   + 前台线程和后台线程：通过Thread类新建的线程默认为前台线程，当所有前台线程关闭时，所有的后台线程也会被直接终止，不会抛出异常
-
-   + 挂起和唤醒：由于线程的执行顺序和程序的执行情况不可预知，挂起和.唤醒可能会发生死锁，尽量少用
-
-   + 阻塞线程：Join，阻塞调用线程，直到该线程结束
-
-   + 终止线程：Abort，终止后的线程不可唤醒；Interrupt，通过捕获异常可以继续执行
-
-   + 线程优先级：默认为Normal
-
-     ```C#
-     //框架源码
-     namespace System.Threading
-     {
-         [Serializable]
-         [System.Runtime.InteropServices.ComVisible(true)]
-         public enum ThreadPriority
-         {
-             /*===========================================
-             ** Constants for thread priorities.
-             ============================================*/
-             Lowest = 0,
-             BelowNormal = 1,
-             Normal = 2,
-             AboveNormal = 3,
-             Highest = 4
-         }
-     }
-     ```
-
-3. 线程的使用
-
-   + 最简单的多线程调用-Thread
-
-   ```C#
-   public sealed class Thread : System.Runtime.ConstrainedExecution.CriticalFinalizerObject
-   ```
-
-   被sealed修饰的类，不可以产生子类，即不可被继承。
-
-   构造函数
-
-   ```C#
-   namespace SYstem.Threading
-   {
-       public sealed class Thread : System.Runtime.ConstrainedExecution.CriticalFinalizerObject
-       {
-           /*=========================================================================
-           ** Creates a new Thread object which will begin execution at
-           ** start.ThreadStart on a new thread when the Start method is called.
-           **
-           ** Exceptions: ArgumentNullException if start == null.
-           =========================================================================*/
-           [System.Security.SecuritySafeCritical]  // auto-generated
-           public Thread(ThreadStart start) {
-               if (start == null) {
-                   throw new ArgumentNullException("start");
-               }
-               Contract.EndContractBlock();
-               SetStartHelper((Delegate)start,0);  //0 will setup Thread with default stackSize
            }
-
-           [System.Security.SecuritySafeCritical]  // auto-generated
-           public Thread(ThreadStart start, int maxStackSize) {
-               if (start == null) {
-                   throw new ArgumentNullException("start");
-               }
-               if (0 > maxStackSize)
-                   throw new ArgumentOutOfRangeException("maxStackSize",Environment.GetResourceString("ArgumentOutOfRange_NeedNonNegNum"));
-               Contract.EndContractBlock();
-               SetStartHelper((Delegate)start, maxStackSize);
-           }
-           [System.Security.SecuritySafeCritical]  // auto-generated
-           public Thread(ParameterizedThreadStart start) {
-               if (start == null) {
-                   throw new ArgumentNullException("start");
-               }
-               Contract.EndContractBlock();
-               SetStartHelper((Delegate)start, 0);
-           }
-
-           [System.Security.SecuritySafeCritical]  // auto-generated
-           public Thread(ParameterizedThreadStart start, int maxStackSize) {
-               if (start == null) {
-                   throw new ArgumentNullException("start");
-               }
-               if (0 > maxStackSize)
-                   throw new ArgumentOutOfRangeException("maxStackSize",Environment.GetResourceString("ArgumentOutOfRange_NeedNonNegNum"));
-               Contract.EndContractBlock();
-               SetStartHelper((Delegate)start, maxStackSize);
+   
+           /// <summary>
+           /// 具体执行的事件
+           /// </summary>
+           /// <param name="parameter"></param>
+           /// <exception cref="NotImplementedException"></exception>
+           public void Execute(object? parameter)
+           {
+               DoExecute!.Invoke(parameter!);
            }
        }
    }
    ```
 
-   ```C#
-   namespace System.Threading
-   {
-       public delegate void ThreadStart();
-       public delegate void ParameterizedThreadStart(Object obj);
-   }
-   ```
+## 消息发送和接收
 
-   `Thread`类有4个重载的构造函数，`ThreadStart`和`ParameterizedThreadStart`是两个不含返回值的委托，`maxStackSize`指定该线程最大的访问栈空间。
+基于事件的聚合器，实现`viewmodel`之间的消息通讯
 
-   ```C#
-   public class Program
-   {
-       public void Main(string[] args)
-       {
-           //创建没有参数的线程
-           Thread thread1 = new Thread(()=>
-           {
-                //do...
-           });
-           //创建含有参数的线程
-           Thread thread2 = new Thread((Object o)=>
-           {
-                //do...                           
-           });
-           //启动线程
-           thread1.Start();
-           thread2.Start(Object o);
-       }
-   }
-   ```
+示例
 
-   + 线程池ThreadPool
+```c#
+//界面信息
+<Window x:Class="WpfVMSendMsg.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfVMSendMsg"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <Label Content="接收到的消息"></Label>
+            <TextBox Width="200" Text="{Binding RecieveMsg}"></TextBox>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <local:SendMsgController/>
+        </Grid>
+    </Grid>
+</Window>
+<UserControl x:Class="WpfVMSendMsg.SendMsgController"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfVMSendMsg"
+        mc:Ignorable="d" Height="450" Width="800">
+    <Grid>
+        <Button Content="Send" Height="40" Width="150" Command="{Binding SendMsgCommand}"/>
+    </Grid>
+</UserControl>
+//界面数据上下文绑定各自的viewmodel
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 
-   由于线程的创建和销毁需要耗费一定的开销，过多的使用线程会造成内存资源的浪费，处于对性能的考虑，于是引入了线程池的概念。线程池维护一个请求队列，线程池的代码从队列中提取任务，然后委派给线程池的一个线程执行，线程执行完毕不会被立即销毁，这样既可以在后台执行任务，又可以减少线程创建和销毁所带来的开销。
-
-   ```C#
-   public static class ThreadPool
-   {
-       public static bool QueueUserWorkItem (System.Threading.WaitCallback callBack);
-       public static bool QueueUserWorkItem (System.Threading.WaitCallback callBack, object state);
-   }
-   ```
-
-   ```C#
-   public class Program
-   {
-       public void Main(string[] args)
-       {
-           ThreadPool.QueueUserWorkItem(()=>
-           {
-               //do...
-           });
-           ThreadPool.QueueUserWorkItem((Obeject o)=>
-           {
-                //do...
-           });
-       }
-   }
-   ```
-
-   + Task
-
-   ```C#
-   public class Task : IAsyncResult, IDisposable
-   ```
-
-   ```C#
-   public class Program
-   {
-       public void Main(string[] args)
-       {
-           //new方式实例化一个task，需要通过start方法启动
-           Task task1 = new Task(() =>
-           {
-                //do...
-           });
-           task1.Start();
-           Task task2 = new Task((t) =>
-           {
-                //do...
-           },"hello");
-           task2.Start();
-           //通过Task.Factory.StartNew实例化
-           Task task3 = Task.Factory.StartNew(() =>
+namespace WpfVMSendMsg
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
         {
-             //do...
-        });
-           //Task.Run将任务放在线程池队列，返回并启动一个Task
-        Task task4 = Task.Run(() =>
-        {
-             //do...
-        });
-       }
-   }
-   ```
-
-   常用的方法
-
-   | 方法名称       | 说明                                                       |
-   | -------------- | ---------------------------------------------------------- |
-   | ConfigureAwait | 配置一个bool值，指定是否需要await                          |
-   | ContinueWith   | 两个Task之间的顺序关系，指定一个Task的执行顺序在另一个之后 |
-   | Delay          | 延迟完成                                                   |
-   | Dispose        | 释放当前Task所有资源                                       |
-   | FromCanceled   | 创建一个Task，这个任务是因为特定的原因取消                 |
-   | FromException  | 创建一个Task，这个任务是因为特定的原因执行                 |
-   | FromResult     | 创建一个Task，这个任务有特定的返回结果                     |
-   | Run            | 创建并开启一个Task                                         |
-   | Start          | 开启一个Task                                               |
-   | Wait           | 等待当前的Task结束，阻塞线程                               |
-   | WaitAll        | 等待所有的Task结束，阻塞线程，适用于Task[]                 |
-   | WaitAny        | 等待任一的Task结束，阻塞线程，适用于Task[]                 |
-   | WhenAll        | 创建一个Task在所有的Task结束之后，阻塞线程，适用于Task[]   |
-   | WhenAny        | 创建一个Task在任一的Task结束之后，阻塞线程，适用于Task[]   |
-
-   + 委托异步执行
-
-   委托的异步执行主要有两个方法，`BeginInvoke`和`Invoke`。
-
-   ```C#
-   public class Program
-   {
-       private delegate Test();
-       public void Main(string[] args)
-       {
-           Test test = (()=>{});
-           test.BeginInvoke();//不阻塞线程
-           test.EndInvoke();//异步执行结束
-           test.Invoke();//阻塞线程
-       }
-   }
-   ```
-
-4. 线程同步
-
-   + **原子操作`Interlocked`**：所有的方法都是执行一次原子读取或一次写入操作。每个操作都是不可拆分的指令，在32位系统中，int型的数据属于原子的，访问这个数据只需要一条指令操作即可，long型数据是64位，访问这个数据需要2条独立的指令，如果两个线程同时访问这个数据，很有可能得到两个指令叠加的数据。
-
-   + **加锁y`Lock`**：创建一个对象，最好是私有的，在锁开始的时候会对这个对象中的某一个属性进行置位，表示为当前状态为锁状态，其他线程在访问的时候检查到为锁状态时，会在一个队列中排队等待。在当前锁执行完成后，这个属性置位为解锁状态，线程队列会自动分配一个线程继续访问。
-
-   + **添加监视器`Monitor`**：通过`Monitor.Enter()` 和 `Monitor.Exit()`实现排它锁的获取和释放，获取之后独占资源，不允许其他线程访问。还有一个`TryEnter`方法，请求不到资源时不会阻塞等待，可以设置超时时间，获取不到直接返回false。
-
-   + **读写锁`ReadWriterLock`**：一般情况，数据的读操作要多于写操作，让读操作锁为共享锁，多个线程可以并发读取资源，而写操作为独占锁，只允许一个线程操作。
-
-   + **事件`Event`类实现同步**：`EventWaitHandle`类继承自`WaitHandle`，且派生出两个子类`AutoResetEvent`和`ManualResetEvent`，前者自动重置事件，后者手动重置事件。线程中调用`WaitOne`方法，可以使线程暂停，等待状态置位后继续，通过调用`Set`方法置位。
-
-     ```C#
-
-        AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-        ManualResetEvent manual = new ManualResetEvent(false);
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine($"*************Start**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-            Task.Run(() =>
-            {
-                Console.WriteLine($"*******start1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-                autoResetEvent.WaitOne();
-                Console.WriteLine($"*******end1*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-            });
-            Task.Run(() =>
-            {
-                Console.WriteLine($"*******start2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-                manual.WaitOne();
-                Console.WriteLine($"*******end2*******{System.Threading.Thread.CurrentThread.ManagedThreadId}");
-            });
-            Console.WriteLine($"*************End**************{System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            InitializeComponent();
+            this.DataContext = new MainWindowViewModel();
         }
-        private void button2_Click(object sender, EventArgs e)
+    }
+}
+using System.Windows.Controls;
+
+namespace WpfVMSendMsg
+{
+    /// <summary>
+    /// SendMsgController.xaml 的交互逻辑
+    /// </summary>
+    public partial class SendMsgController : UserControl
+    {
+        public SendMsgController()
         {
-            autoResetEvent.Set();
-            manual.Set();
+            InitializeComponent();
+            this.DataContext = new SendMsgControllerViewModel();
+        }
+    }
+}
+//viewmodel的具体实现
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace WpfVMSendMsg
+{
+    public class ViewModelBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public void RasiePropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
-     ```
-
-   + **信号量Semaphore**：如同计算机基础中的信号量的概念，如果信号量是0，表示当前资源不足，需要等待，线程无法进行访问。当占用资源的线程结束后，释放资源，信号量增加1，此时信号量大于0，表明有资源，线程可以进行访问，当线程开始进行访问资源的时候，信号量减少1.
-
-   + **互斥量`Mutex`**：排他型封锁，独占资源，与信号量的用法差不多
-
-     ```mermaid
-     classDiagram
-        WaitHandle <|-- Mutex
-        WaitHandle <|-- Semaphore
-        WaitHandle <|-- EventWaitHandle
-        EventWaitHandle <|-- AutoResetEvent
-        EventWaitHandle <|-- ManualResetEvent
-     ```
-
-## 委托
-
-1. 理解委托
-
-   Delegate类似于C++中的指针，是存有某个方法的引用的一种引用类型变量，可以在运行时被改变，特别用于实现事件和回调方法。**将方法作为方法的参数**
-
-2. 实例
-
-   ```C#
-    public void GreetPeople(string name)
-    {
-        EnglishGreeting(name);
+        public void RasiePropertyChanged<T>(Expression<Func<T>> expression)
+        {
+            MemberExpression member = (MemberExpression)expression.Body;
+            string propertyName = member.Member.Name;
+            RasiePropertyChanged(propertyName);
+        }
     }
-    public void EnglishGreeting(stirng name)
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace WpfVMSendMsg
+{
+    public class MainWindowViewModel : ViewModelBase
     {
-        Console.WriteLine("Good Morning, " + name);   
+        private string _recieveMsg = string.Empty;
+
+        public string RecieveMsg
+        {
+            get { return _recieveMsg; }
+            set { _recieveMsg = value; RasiePropertyChanged(() => RecieveMsg); }
+        }
+
+        public MainWindowViewModel()
+        {
+            EventAggregatorRepository.GetInstance().eventAggregator.Register<string>(ShowData);
+        }
+
+        private void ShowData(object obj)
+        {
+            string msg = obj.ToString();
+            RecieveMsg = msg;
+            MessageBox.Show(obj.ToString());
+        }
     }
-   ```
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-   上面的例子中是一个实现打招呼的方法，现在假设这个程序需要进行全球化，不是所有的人都能认识英文，需要对程序进行扩展，能实现多国语言的打招呼。
+namespace WpfVMSendMsg
+{
+    public class SendMsgControllerViewModel : ViewModelBase
+    {
+        public ReplayCommand<string> SendMsgCommand
+        {
+            get;
+            set;
+        }
+        public SendMsgControllerViewModel()
+        {
+            SendMsgCommand = new ReplayCommand<string>(SendMsg);
+        }
 
-   ```C#
-   public enum Language
-   {
-       English,Chinese
-   }
-   public void GreetPeople(string name,Language lang)
-   {
-       switch(lang)
-       {
-           case Language.English:
-               EnglishGreeting(name);
-               breake;
-           case Language.Chinese:
-               ChineseGreeting(name);
-               breake;
-       }
-   }
-   public void EnglishGreeting(stirng name)
-   {
-        Console.WriteLine("Good Morning, " + name);   
-   }
-   public void ChineseGreeting(string name)
-   {
-       Console.WriteLine("早上好, " + name);
-   }
-   ```
+        private void SendMsg(string msg)
+        {
+            EventAggregatorRepository.GetInstance().eventAggregator.Send<string>("hello");
+        }
+    }
+}
+using System;
+using System.Windows.Input;
 
-   这样，确实解决了问题，也很容易想到，但是解决方案的可扩展性很差，每次增加一个语言，就不得不反复修改枚举和GreetPeople()方法。
+namespace WpfVMSendMsg
+{
+    public class ReplayCommand : ICommand
+    {
+        public event EventHandler? CanExecuteChanged;
+        private Action? _execute;
+        private Func<bool>? _canexecute;
 
-   在考虑新的解决方案之前，我们先看看 GreetPeople 的方法签名：
+        public ReplayCommand(Action? execute, Func<bool>? canexecute = null)
+        {
+            _execute = execute;
+            _canexecute = canexecute;
+        }
 
-   ```c#
-      public void GreetPeople(string name, Language lang);
-   ```
+        public bool CanExecute(object? parameter)
+        {
+            if (_canexecute == null)
+            {
+                return true;
+            }
+            return _canexecute();
+        }
 
-   我们仅看 string name，在这里，string 是参数类型，name 是参数变量，当我们赋给 name 字符串“Liker”时，它就代表“Liker”这个值；当我们赋给它“李志中”时，它又代表着“李志中”这个值。然后，我们可以在方法体内对这个 name 进行其他操作。哎，这简直是废话么，刚学程序就知道了。
+        public void Execute(object? parameter)
+        {
+            _execute!();
+        }
+    }
+    public class ReplayCommand<T> : ICommand
+    {
+        public event EventHandler? CanExecuteChanged;
+        private Action<T>? _execute;
+        private Func<T, bool>? _canexecute;
 
-   如果你再仔细想想，假如 GreetPeople() 方法可以接受一个参数变量，这个变量可以代表另一个方法，当我们给这个变量赋值 EnglishGreeting 的时候，它代表着 EnglsihGreeting() 这个方法；当我们给它赋值ChineseGreeting 的时候，它又代表着 ChineseGreeting() 法。我们将这个参数变量命名为 MakeGreeting，那么不是可以如同给 name 赋值时一样，在调用 GreetPeople()方法的时候，给这个MakeGreeting 参数也赋上值么(ChineseGreeting 或者EnglsihGreeting 等)？然后，我们在方法体内，也可以像使用别的参数一样使用MakeGreeting。但是，由于 MakeGreeting 代表着一个方法，它的使用方式应该和它被赋的方法(比如ChineseGreeting)是一样的，比如：MakeGreeting(name);
+        public ReplayCommand(Action<T>? execute, Func<T, bool>? canexecute = null)
+        {
+            _execute = execute;
+            _canexecute = canexecute;
+        }
 
-   好了，有了思路了，我们现在就来改改GreetPeople()方法，那么它应该是这个样子了：
+        public bool CanExecute(object? parameter)
+        {
+            if (_canexecute == null)
+            {
+                return true;
+            }
+            return _canexecute((T)parameter!);
+        }
 
-   ```C#
-   public void GreetPeople(string name, *** MakeGreeting)
-   {
-          MakeGreeting(name);
-   }
-   ```
+        public void Execute(object? parameter)
+        {
+            _execute((T)parameter!);
+        }
+    }
+}
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-   注意到 *** ，这个位置通常放置的应该是参数的类型，但到目前为止，我们仅仅是想到应该有个可以代表方法的参数，并按这个思路去改写 GreetPeople 方法，现在就出现了一个大问题：这个代表着方法的 MakeGreeting 参数应该是什么类型的？
+namespace WpfVMSendMsg
+{
+    /// <summary>
+    /// 事件聚合器
+    /// </summary>
+    public class EventAggregator
+    {
+        //添加一个线程安全字典
+        public static ConcurrentDictionary<Type, List<Action<object>>> _handles = new ConcurrentDictionary<Type, List<Action<object>>>();
+        /// <summary>
+        /// 添加注册方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="action"></param>
+        public void Register<T>(Action<object> action)
+        {
+            if (!_handles.ContainsKey(typeof(T)))
+            {
+                _handles[typeof(T)] = new List<Action<object>>();
+            }
+            _handles[typeof(T)].Add(action);
+        }
+        /// <summary>
+        /// 添加一个发送消息的方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        public void Send<T>(object obj)
+        {
+            if (_handles.ContainsKey(typeof(T)))
+            {
+                foreach (var action in _handles[typeof(T)])
+                {
+                    action!.Invoke(obj);
+                }
+            }
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-   说明：这里已不再需要枚举了，因为在给MakeGreeting 赋值的时候动态地决定使用哪个方法，是 ChineseGreeting 还是 EnglishGreeting，而在这个两个方法内部，已经对使用“Good Morning”还是“早上好”作了区分。
+namespace WpfVMSendMsg
+{
+    /// <summary>
+    /// 事件聚合器的仓库，用于生成聚合器
+    /// </summary>
+    public class EventAggregatorRepository
+    {
+        public EventAggregator eventAggregator;
+        private static EventAggregatorRepository eventAggregatorRepository;
+        private static object _lock = new object();
 
-   聪明的你应该已经想到了，现在是委托该出场的时候了，但讲述委托之前，我们再看看MakeGreeting 参数所能代表的 ChineseGreeting()和EnglishGreeting()方法的签名：
+        public EventAggregatorRepository()
+        {
+            eventAggregator = new EventAggregator();
+        }
+        /// <summary>
+        /// 单例获取对象实例
+        /// </summary>
+        /// <returns></returns>
+        public static EventAggregatorRepository GetInstance()
+        {
+            if (eventAggregatorRepository == null)
+            {
+                lock(_lock)
+                {
+                    if (eventAggregatorRepository == null)
+                    {
+                        eventAggregatorRepository = new EventAggregatorRepository();
+                    }
+                }
+            }
+            return eventAggregatorRepository;
+        }
+    }
+}
 
-   **public void EnglishGreeting(string name)**
+```
 
-   **public void ChineseGreeting(string name)**
-
-   如同 name 可以接受 String 类型的“true”和“1”，但不能接受bool 类型的true 和int 类型的1 一样。MakeGreeting 的参数类型定义应该能够确定 MakeGreeting 可以代表的方法种类，再进一步讲，就是 MakeGreeting 可以代表的方法的参数类型和返回类型。
-
-   于是，委托出现了：它定义了 MakeGreeting 参数所能代表的方法的种类，也就是 MakeGreeting 参数的类型。
-
-   本例中委托的定义：
-
-    `public delegate void GreetingDelegate(string name);`
-
-   与上面 EnglishGreeting() 方法的签名对比一下，除了加入了delegate 关键字以外，其余的是不是完全一样？现在，让我们再次改动GreetPeople()方法，如下所示：
-
-   ```C#
-   public delegate void GreetingDelegate(string name);
-   public void GreetPeople(string name, GreetingDelegate MakeGreeting)
-   {
-       MakeGreeting(name);
-   }
-   ```
-
-   如你所见，委托 GreetingDelegate 出现的位置与 string 相同，string 是一个类型，那么 GreetingDelegate 应该也是一个类型，或者叫类(Class)。但是委托的声明方式和类却完全不同，这是怎么一回事？实际上，委托在编译的时候确实会编译成类。因为 Delegate 是一个类，所以在任何可以声明类的地方都可以声明委托。更多的内容将在下面讲述，现在，请看看这个范例的完整代码：
-
-   ```C#
-   public delegate void GreetingDelegate(string name);
-   class Program
-   {
-       private static void EnglishGreeting(string name)
-       {
-           Console.WriteLine("Good Morning, " + name);
-       }
-       private static void ChineseGreeting(string name)
-       {
-           Console.WriteLine("早上好, " + name);
-       }
-       private static void GreetPeople(string name, GreetingDelegate MakeGreeting)
-       {
-           MakeGreeting(name);
-       }
-       static void Main(string[] args)
-       {
-           GreetPeople("Liker",EnglishGreeting);
-           GreetPeople("李志忠"，ChineseGreeting);
-           Console.ReadLine();
-       }
-   }
-   ```
-
-   我们现在对委托做一个**总结**：委托是一个类，它定义了方法的类型，使得可以将方法当作另一个方法的参数来进行传递，这种将方法动态地赋给参数的做法，可以避免在程序中大量使用If … Else(Switch)语句，同时使得程序具有更好的可扩展性。
-
-   ```C#
-   ///委托类型GreetingDelegate和类型String的地位一样，都是定义了一种参数类型
-   ///方法一
-   static void Main(string[] args)
-   {
-       GreetPeople("Liker",EnglishGreeting);
-       GreetPeople("李志忠"，ChineseGreeting);
-       Console.ReadLine();
-   }
-   ///方法二
-   static void Main(string[] args)
-   {
-       GreetingDelegate delegate1, delegate2;
-       delegate1 = EnglishGreeting;
-       delegate2 = ChineseGreeting;
-       GreetPeople("Liker", delegate1);
-       GreetPeople("李志中", delegate2);
-       Console.ReadLine();
-   }
-   ```
-
-   这里，我想说的是委托不同于 string 的一个特性：**可以将多个方法赋给同一个委托，或者叫将多个方法绑定到同一个委托，当调用这个委托的时候，将依次调用其所绑定的方法。**在这个例子中，语法如下：
-
-   ```C#
-   ///方法一
-   static void Main(string[] args)
-   {
-       GreetingDelegate delegate1;
-       delegate1 = EnglishGreeting;
-       delegate1 += ChineseGreeting;
-       GreetPeople("Liker", delegate1);
-       Console.ReadLine();
-   }
-   ///方法二
-   static void Main(string[] args)
-   {
-       GreetingDelegate delegate1;
-       delegate1 = EnglishGreeting;
-       delegate1 += ChineseGreeting;
-       delegate1("Liker");
-       Console.ReadLine();
-   }
-   ```
-
-   **注意这里，第一次用的“=”，是赋值的语法；第二次，用的是“+=”，是绑定的语法。如果第一次就使用“+=”，将出现“使用了未赋值的局部变量”的编译错误。**我们也可以使用下面的代码来这样简化这一过程：
-
-   ```C#
-   GreetingDelegate delegate1 = new GreetingDelegate(EnglishGreeting);
-   delegate1 += ChineseGreeting;
-   ```
-
-   既然给委托可以绑定一个方法，那么也应该有办法取消对方法的绑定，很容易想到，这个语法是“-=”：
-
-   ```C#
-   delegate1 -= ChineseGreeting;
-   ```
-
-   小结：**使用委托可以将多个方法绑定到同一个委托变量，当调用此变量时(这里用“调用”这个词，是因为此变量代表一个方法)，可以依次调用所有绑定的方法。**
-
-3. 委托实现方式
-
-   **简单实现**
-
-   ```C#
-   static void Main(string[] args)
-   {
-       GreetingDelegate delegate1, delegate2;
-       delegate1 = EnglishGreeting;
-       delegate2 = ChineseGreeting;
-       GreetPeople("Liker", delegate1);
-       GreetPeople("李志中", delegate2);
-       Console.ReadLine();
-   }
-   ```
-
-   **多播/多组**
-
-   ```C#
-   static void Main(string[] args)
-   {
-       GreetingDelegate delegate1;
-       delegate1 = EnglishGreeting;
-       delegate1 += ChineseGreeting;
-       delegate1("Liker");
-       Console.ReadLine();
-   }
-   ```
-
-   **委托数组**：delegate是一种类型，或者说是一个类，那么就可以组成一个delegate类型的数组
-
-   ```C#
-   ///System.Delegate源码
-   namespace System
-   {
-       public abstract class Delegate : ICloneable, ISerializable
-       {
-           ...
-       }
-   }
-   ```
-
-   ```C#
-   //声明一个委托
-   delegate double Operations(double x);
-
-   struct MathOperations
-   {
-       public static double MultiplyByTwo(double value)
-       {
-           return value * 2;
-       }
-
-       public static double Square(double value)
-       {
-           return value * value;
-       }
-   }
-
-   class Program
-   {
-       static void Main()
-       {
-           Operations[] operations =
-           {
-               MathOperations.MultiplyByTwo,
-               MathOperations.Square
-           };
-
-           for (int i = 0; i < operations.Length; i++)
-           {
-               Console.WriteLine("Using operations[{0}]:", i);
-               DisplayNumber(operations[i], 2.0);
-               DisplayNumber(operations[i], 7.94);
-               Console.ReadLine();
-           }
-       }
-
-       static void DisplayNumber(Operations action, double value)
-       {
-           double result = action(value);
-           Console.WriteLine(
-               "Input Value is {0}, result of operation is {1}", value, result);
-       }
-   }
-   ```
-
-   **Action\<T>和Func\<T>**
-
-   使用委托时，除了为每个参数和返回类型定义一个新委托类型之外，还可以使用.NET Framework提供的泛型委托Action\<T>和Func\<T>，它们提供了从无参一直到最多16个参数的重载，如果方法需要获取16个以上的参数，就必须定义自己的委托类型，但这种情况应该是及其罕见的。其中Action\<T>类可以调用没有返回值的方法，Func\<T>允许调用带返回类型的方法。
-
-   ```C#
-   //带有返回值的方法
-   public int Sum(int a, int b)
-   {
-       return a + b;
-   }
-   //不带返回值的方法
-   public void Out(string text)
-   {
-       Console.WriteLine(text);
-   }
-   //常规的委托
-   private delegate int D1(int a, int b);
-   private delegate void D2(string text);
-   public static void Main(string[] args)
-   {
-       D1 d1 = Sum;
-       D2 d2 = Out;
-       Console.WriteLine(d1(1,2));
-       d2("hello");
-       Action<string> action = Out;
-       action("world");
-       Func<int, int, int> func = Sum;
-       Console.WriteLine(func(3,4));
-   }
-   ```
-
-   **匿名方法**
-
-   ```c#
-   public void Main(string[] args)
-   {
-       Func<int,int,int> func = delegate(int a, int b)
-       {
-           return a + b;  
-       };
-       Console.WriteLine(func(3,4));
-   }
-   ```
-
-   **Lambda表达式**
-
-   ```C#
-   //不含参数
-   Func<string> f = () => "linging";
-   //一个参数
-   Func<int, string> f1 = (int n) => n.Tostring();
-   Func<int, string> f2 = (n) => n.Tostring();
-   Func<int, string> f3 = n => n.Tostring();
-   //多个参数
-   Func<int, int, string> f4 = (int n,int m) => (n + m).Tostring();
-   Func<int, int, string> f5 = (n, m) => (n + m).Tostring();
-   ```
-
-## 反射
-
-## 泛型
+## 拖放
 
 1. 概述
 
-   类是对象的模板，类是具有相同属性和行为的对象的抽象。
+   在很多桌面应用中，经常会遇到拖放操作，拖放文件，拖放控件等，`WPF`中也是支持拖放。
 
-   generic paradigm通用的范式，是类型的模板。作为模板的类通过实例化产生不同的对象，而泛型是通过不同的类型实参产生不同的类型。
+   拖放操作通常涉及两个参与者，拖动对象所源自的拖动源和接收放置对象的拖放目标。拖动源和放置目标可能是相同的应用程序或者不同应用程序的`UI`元素
 
-   我们在编程时，经常会遇到功能非常相似的模块，只是处理的数据不一样。
+   `WPF`提供的拖放设施拥有高度的灵活性并可自定义，以便支持各种拖放方案，拖放支持的单个应用程序内或不同应用程序之间操作对象，完全支持`WPF`应用程序和其他应用程序之间的拖放
 
-   泛型的几种优点和缺点：
+   在`WPF`中，任何`UIElement`或`ContentElement`都可以参与拖放。拖放操作所需的时间和方法是在`DragDrop`类中定义的。
 
-   1. 性能
-      泛型的一个主要优点就是性能。System.Collections和System.Collections.Generic名称控件的泛型和非泛型集合类，对值类型使用非泛型集合类，在把值类型转换为引用类型，和把引用类型转换为值类型时，需要进行装箱和拆箱操作。
-   2. 类型安全
-   3. 二级制代码重用
-   4. 代码的扩展
-   5. 命名约定
+2. 数据传输
 
-   **5种泛型：类，结构，接口，委托和方法**
+   拖放属于广义的数据传输，包括拖放和复制粘贴操作。拖放操作类似于用于借助系统剪贴板将数据从一个对象或应用程序传输到另一个对象或应用程序的复制、剪切、粘贴操作。
 
-2. 示例
+   要求：
 
-   ```C#
-   ///泛型方法示例
-   public void ShowInt(int a)
-   {
-       Console.WriteLine("This is {0},parameter={1},type={2}",
-                         typeof(Form1).Name, a.GetType().Name, a);
-   }
-   public void ShowString(string text)
-   {
-       Console.WriteLine("This is {0},parameter={1},type={2}",
-                         typeof(Form1).Name, text.GetType().Name, text);
-   }
-   public void ShowDateTime(DateTime dateTime)
-   {
-       Console.WriteLine("This is {0},parameter={1},type={2}",
-                         typeof(Form1).Name, dateTime.GetType().Name, dateTime);
-   }
-   public void ShowObject(Object o)
-   {
-       Console.WriteLine("This is {0},parameter={1},type={2}",
-                         typeof(Form1).Name, o.GetType().Name, o);
-   }
-   public void Show<T> (T t)
-   {
-       Console.WriteLine("This is {0},parameter={1},type={2}",
-                         typeof(Form1).Name, t.GetType().Name, t);
-   }
+   + 提供数据的源对象
+   + 用于临时存储传输的数据的方法
+   + 接受数据的目标对象
+
+   在复制粘贴操作中，系统剪贴板用于临时存储传输的数据；在拖放操作中，`DataObject`用于存储数据。
+
+   拖动源通过调用`DragDrop.DoDragDrop`方法，和向其传递的数据来启动拖放操作。
+
+   拖放操作的源和目标均为`UI`元素，然而，实际正在传输的数据通常不具有可视表示形式。可以编写代码来提供拖动的数据的可是表示形式，一般情况，通过改变光标的形状作为反馈。
+
+3. 拖放效果
+
+   在拖放的过程中，不同的目的，可以有不同的效果。`DragDropEffects`枚举
+
+   | 字段名称 | 值          | 说明                                           |
+   | -------- | ----------- | ---------------------------------------------- |
+   | All      | -2147483645 | 从拖动源复制、清除数据，并将其滚动到放置目标中 |
+   | Copy     | 1           | 将数据复制到放置目标                           |
+   | Link     | 4           | 将拖动源中的数据链接到放置目标                 |
+   | Move     | 2           | 将拖动源的数据移动到放置目标                   |
+   | Node     | 0           | 放置目标不接受该数据                           |
+   | Scroll   | -2147483648 | 即将在放置目标中开始滚动，或当前正在滚动       |
+
+   在拖动源中，可以指定源在`DoDragDrop`方法中允许的效果。在拖放目标中，可以指定目标在`Effect`类的`DragEventArgs`属性中的预期效果。当拖放目标制定在`DragOver`事件中的预期效果时，该信息将被传回`GiveFeedback`时间中的拖动源。
+
+4. 拖放事件
+
+   拖动源事件
+
+   | 事件              | 总结                                                         |
+   | ----------------- | ------------------------------------------------------------ |
+   | GiveFeedback      | 此事件在拖放期间持续发生，并且使放置源能够向用户提供反馈信息。 |
+   | QueryContinueDrag | 此事件于拖放期间键盘或鼠标按钮状态发生变化时，并将放置源能够根据键盘或者鼠标状态取消拖放操作 |
+
+   拖放目标事件
+
+   | 事件      | 总结                                       |
+   | --------- | ------------------------------------------ |
+   | DargEnter | 将对象拖到拖放目标的边界中时发生此事件     |
+   | DragLeave | 将对象拖出拖放目标边界时发生此事件         |
+   | DragOver  | 在拖放目标的边界内拖动对象时持续发生此事件 |
+   | Drop      | 将对象放置在拖放目标上时发生此事件         |
+
+5. 实现拖放
+
+   `UI`元素可以时拖动源、拖放目标或者两者均可。若要实现基本拖放，需要完成一下任务：
+
+   + 表示将作为拖动源的元素
+   + 在将启动拖放操作的拖动源上创建事件处理程序，通常是`MouseMove`事件
+   + 在拖动源事件处理程序中，调用`DoDragDrop`方法启动拖放操作。指定拖动源、要传输的数据和允许的效果
+   + 表示将作为拖放目标的元素
+   + 在拖放目标上，将`AllowDrag`设置为`true`
+   + 在拖放目标中，创建`Drop`事件处理程序以处理放置的数据
+   + 在`Drop`事件处理程序中，利用`DragEventArgs`和`GetDataPresent`方法提取`GetData`中的数据
+   + 在`Drop`事件处理程序中，使用数据来执行所需要的拖放操作
+
+   可以通过创建自定义`DataObject`和处理可选拖动源和拖放目标事件来增加拖放实现
+
+   + 若要传递自定义数据或多个数据项，请创建一个`DataObject`以传递至`DoDragDrop`方法
+   + 若要在拖动过程中执行其他操作，请处理拖放目标上的`DragEnterDragOver`和`DragLeave`事件
+   + 若要更改鼠标指针外观，请处理拖动源上的`GiveFeedback`事件
+   + 若要更改取消拖放操作的方式，请处理拖动源上的`QueryContinueDrag`事件
+
+6. 使元素作为拖动源
+
+   拖动源对象用于：
+
+   + 表示拖动发生的时候
+   + 启动拖放操作
+   + 表示要传输的数据
+   + 指定允许拖放操作对传输的数据产生的效果
+
+   `DoDragDrop`方法采用三个参数：
+
+   + `dragSource`：引用作为传输的数据源的依赖项对象
+   + `data`：包含传输的数据的对象
+   + `allowedEffects`：指定拖放操作允许的效果`DragDropEffects`枚举
+
+   任何可以序列化的对象都可以在`data`中传递，如果数据没有自定义包装，那么就会自动包装在一个新的`DataObject`中。如果要传递多个数据项，必须自行创建`DataObject`，然后在作为参数传入。
+
+7. 使元素作为拖放目标
+
+   作为拖放目标的对象用于：
+
+   + 指定其是有效的拖放目标
+   + 当它拖动到目标之上时，向拖动源做出相应
+   + 检查传输的数据是否是它可以接收的格式
+   + 处理已放置的数据
+
+   若要指定一个元素是拖放目标，将`AllowDrop`属性设置为`true`，然后，元素中将引发拖放目标事件。
+
+8. 示例
+
+   ![image-20230615204232155](D:\personal\rote\WPF.assets\image-20230615204232155.png)
+   
+   ```xaml
+   <Grid>
+       <Grid.ColumnDefinitions>
+           <ColumnDefinition />
+           <ColumnDefinition />
+       </Grid.ColumnDefinitions>
+       <StackPanel Grid.Column="0">
+           <DataGrid
+                     Name="dg"
+                     Margin="20"
+                     IsReadOnly="True"
+                     SelectionUnit="FullRow" />
+       </StackPanel>
+       <StackPanel Grid.Column="1">
+           <TextBlock
+                      Height="100"
+                      Margin="20"
+                      Background="Yellow" />
+           <Label
+                  Height="100"
+                  Margin="20"
+                  Background="Green" />
+       </StackPanel>
+   </Grid>
    ```
-
-   `ShowObject`这种方法也可以实现代码不重复，但是会增加拆箱和装箱的动作，增加了性能损耗，并且存在一定的类型安全问题，在类型相互转换的时候可能会出现转换失败的情况。
-
-   声明泛型类型时，确定了类型实参，所以不需要拆箱和装箱，而且将大量的安全检查从运行时转移到了编译时，保证了类型安全。
-
-   ```C#
-   ///泛型类
-   public class Show<T>
-   {
-       public void ShowMsg(T t)
-       {
-           Console.WriteLine("This is ShowMsg,parameter={0},type={1}",
-                             t.GetType().Name, t);
-       }
-   }
-   public class Program
-   {
-       public void Main(string[] args)
-       {
-           Show<int> show_i = new Show<int>();
-           show_i.ShowMsg(999);
-           Show<string> show_s = new Show<string>();
-           show_s.ShowMsg("888");
-       }
-   }
+   
+   界面比较简单，左边是一个数据表格`DataGrid`，作为拖动源，右边是两个展示框，用来作为拖放目标
+   
+   第一步，给拖动源创建一个事件方法，这里采用的是`MouseLeftButtonDown`
+   
+   ```xaml
+   <DataGrid
+             Name="dg"
+             Margin="20"
+             IsReadOnly="True"
+             SelectionUnit="FullRow" 
+             MouseLeftButtonDown="dg_MouseLeftButtonDown"/>
    ```
-
-3. 泛型的约束
-
-   所谓的泛型约束，实际上就是约束类型T，使T必须遵循一定的规则。
-
-   | 约束            | 说明                                                         |
-   | --------------- | ------------------------------------------------------------ |
-   | T : struct      | 类型参数必须是值类型                                         |
-   | T : class       | 类型参数必须是引用类型，也适用于类，接口，委托或数组类型     |
-   | T : new()       | 类型参数必须是具有无参数的公共构造函数，与其他约束一起使用时置于最后 |
-   | T : \<Base>      | 类型参数必须是指定的基类或派生自指定的基类                   |
-   | T : \<Interface> | 类型参数必须是指定的接口或实现指定的接口，可以多接口约束，约束接口也可以使泛型的 |
-
-   ```C#
-   //指定泛型参数为值类型
-   class MyList<T> where T : struct
-   //指定泛型参数为引用类型
-   class MyList<T> where T : class
-   //指定泛型参数为无参数的公共构造函数
-   class MyList<T> where T : new()
-   //指定泛型参数为指定基类
-   class MyList<T> where T : Object
-   //指定泛型参数为指定接口
-   class MyList<T> where T : Interface
-   ```
-
-4. 协变和逆变
-
-   ```C#
-   public interface IMyList<in inT, out outT>
-   {
-       void Show(inT t);
-       outT Get();
-       outT Do(inT t);
-   }
-   public class MyList<T1, T2> : IMyList<T1, T2>
-   {
-       public void Show(T1 t)
-       {
-           Console.WriteLine(t.GetType().Name);
-       }
-       public T2 Get()
-       {
-           Console.WriteLine(typeof(T2).Name);
-           return default(T2);
-       }
-       public T2 Do(T1 t)
-       {
-           Console.WriteLine(t.GetType().Name);
-           Console.WriteLine(typeof(T2).Name);
-           return default(T2);
-       }
-   }
-   public class Program
-   {
-       public void Main(string[] args)
-       {
-           //严格按照类的类型进行实例化
-           IMyList<Cat,Animal> myList1 = new MyList<Cat,Animal>();
-           //协变，Cat是Animal的子类，返回结果的类型是父类，实例化的时候可以使用子类类型
-           IMyList<Cat,Animal> myList2 = new MyList<Cat,Cat>();
-           //逆变，在泛型接口/类中，不会使用子类独有的方法，使用父类作为入参可行
-           IMyList<Cat,Animal> myList3 = new MyList<Animal,Animal>();
-           //逆变+协变
-           IMyList<Cat,Animal> myList3 = new MyList<Animal,Cat>();
-       }
-   }
-   ```
-
-## 事件
-
-## 特性
-
-## 属性
-
-## 字符串的几种拼接方式
-
-1. 简单拼接`+=`
-
-   `string`是引用类型，保留在堆上，而不是栈。用的时候传的的是内存地址，每次修改就会重新创建一个新的对象来存储字符串，原有的会自动回收。
-
-   简单的拼接在一般简单的拼接不会有太大的问题，需要循环拼接的时候，会不断创建新的对象，性能和内存消耗比较大。
-
-2. String.Format()
-
+   
    ```c#
-   public static String Format(IFormatProvider provider, String format, params Object[] args)
+   private void dg_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
    {
-       if(format == null || args == null)
-       {
-           throw new ArgumentNullException((format==null)?"format":"args");
-       }
-       StringBuilder sb = new Stringbuilder(format.Length + args.Length * 8);
-       sb.AppendFormat(provider,format,args);
-       return sb.Tostring();
+       var source = sender as DependencyObject;
+       var student = dg.SelectedItem as Student;
+       var data = new DataObject(student);
+       DragDrop.DoDragDrop(source, data, DragDropEffects.Copy);
    }
    ```
-
-   先创建一个StringBuilder类型的变量，存放新的字符串，比较整洁易于阅读，效率也比较高。
-
-3. string.concat()
-
+   
+   `DragDrop.DoDragDrop()`方法中最后一个参数，可以根据不同的目标选用不同的状态，`DragDropEffects`枚举
+   
+   第二步，标记拖放目标元素
+   
+   ```xaml
+   <StackPanel Grid.Column="1">
+       <TextBlock
+                  Height="100"
+                  Margin="20"
+                  AllowDrop="True"
+                  Background="Yellow" />
+       <Label
+              Height="100"
+              Margin="20"
+              AllowDrop="True"
+              Background="Green" />
+   </StackPanel>
+   ```
+   
+   第三步，给拖放目标创建接收拖放数据的事件
+   
+   ```xaml
+   <StackPanel Grid.Column="1">
+       <TextBlock
+                  Height="100"
+                  Margin="20"
+                  AllowDrop="True"
+                  Background="Yellow"
+                  Drop="TextBlock_Drop" />
+       <Label
+              Height="100"
+              Margin="20"
+              AllowDrop="True"
+              Background="Green"
+              Drop="TextBlock_Drop" />
+   </StackPanel>
+   ```
+   
    ```c#
-   public String concat(String str)
+   private void TextBlock_Drop(object sender, DragEventArgs e)
    {
-       //追加的字符串长度
-       int otherLen = str.length();
-       //如果追加的字符串长度为0，则不做修改，直接返回原字符串
-       if(otherLen == 0)
-       {
-           return this;
-       }
-       //获取原字符串的字符数组vaue的长度
-       int len = value.length();
-       //将原字符串的字符数组value放到buf字符数组中
-       char buff[] = Arrays.copyOf(value,len + otherLen);
-       //将追加的字符串转化成字符数组，添加到buf中
-       str.getChars(buf,len);
-       //产生一个新的字符串并返回
-       return new String(buf,true);
+       // 检查当前接收到的数据类型是否为能接收并处理的数据类型
+       // 这里将处理Student类型的数据
+       if (!e.Data.GetDataPresent(typeof(Student))) return;
+   
+       // 取出参数中包含的对象数据
+       var student = e.Data.GetData(typeof(Student)) as Student;
+   
+       // 处理数据，这里将拖放目标展示的内容改为传过来的数据对象的Name属性
+       Tb.Text = student.Name;
+   }
+   private void Lbl_Drop(object sender, DragEventArgs e)
+   {
+       // 检查当前接收到的数据类型是否为能接收并处理的数据类型
+       // 这里将处理Student类型的数据
+       if (!e.Data.GetDataPresent(typeof(Student))) return;
+   
+       // 取出参数中包含的对象数据
+       var student = e.Data.GetData(typeof(Student)) as Student;
+   
+       // 处理数据，这里将拖放目标展示的内容改为传过来的数据对象的Name属性
+       Lbl.Content = student.Name;
    }
    ```
-
-   整体是一个数组的拷贝，在内存中的处理是原子性的，速度快，最后返回的时候会创建一个`String`对象，每次执行`concat`操作都会创建一个对象，限制了这个方法的速度。
-
-4. Stringbuilder.Append()
-
-   ```c#
-   public AbstractStringBUilder append(String str)
-   {
-       //如果是null值，则把null作为字符串处理
-       if(str == null)
-       {
-           return appendNull();
-       }
-       int len = str.length();
-       //追加后的字符数组长度是否超过当前值
-       ensureCapacityInternal(count + len);
-       //字符串复制到目标数组
-       str.getChars(0,len,value,count);
-       count += len;
-       return this;
-   }
-   private AbstractStringBuilder appendNull()
-   {
-       int c = count;
-       ensureCapacityInternal(c+4);
-       final char[] value = this.value;
-       value[C++] = 'n';
-       value[C++] = 'u';
-       value[C++] = 'l';
-       value[C++] = 'l';
-       return this;
-   }
-   private void ensureCapacityInternal(int minimunCapacity)
-   {
-       //overflow-conscious code
-       if(minimumCapacity - value.length > 0)
-       {
-           expandCapacity(minimumCapacity);//加长，并做数组拷贝
-       }
-   }
-   ```
-
-   整个的`append`方法都在做字符数组的处理，加长、拷贝等，都是基本的数据处理，没有生成对象。只是最后ToString返回一个对象而已，注意这个方法返回的是一个StringBuilder对象实例。
-
-## 静态构造函数
-
-   静态构造函数用于初始化任何静态数据，或执行仅需执行一次的特定操作。将在创建第一个实例或引用任何静态成员之前自动调用静态构造函数。
-
-   ``` C#
-      class SimpleClass
-      {
-          // Static variable that must be initialized at run time.
-          static readonly long baseline;
-
-          // Static constructor is called at most one time, before any
-          // instance constructor is invoked or member is accessed.
-          static SimpleClass()
-          {
-              baseline = DateTime.Now.Ticks;
-          }
-      }
-   ```
-
-1. 备注
-
-   + 静态构造函数不适用访问修饰符或不具有参数。
-   + 类或结构只能有一个静态构造函数。
-   + 静态构造函数不能继承或重载。
-   + 静态构造函数不能直接调用，并且仅应由公共语言运行时CLR调用，可以自动调用它们。
-   + 用户无法控制在程序中执行静态构造函数的时间。
-   + 自动调用静态构造函数。 它在创建第一个实例或引用该类（不是其基类）中声明的任何静态成员之前初始化类。 静态构造函数在实例构造函数之前运行。 调用（而不是分配）分配给事件或委托的静态方法时，将调用类型的静态构造函数。 如果静态构造函数类中存在静态字段变量初始值设定项，它们将以在类声明中显示的文本顺序执行。 初始值设定项紧接着执行静态构造函数之前运行。
-   + 如果未提供静态构造函数来初始化静态字段，会将所有静态字段初始化为其默认值，如 C# 类型的默认值中所列。
-   + 如果静态构造函数引发异常，运行时将不会再次调用该函数，并且类型在应用程序域的生存期内将保持未初始化。 大多数情况下，当静态构造函数无法实例化一个类型时，或者当静态构造函数中发生未经处理的异常时，将引发 TypeInitializationException 异常。 对于未在源代码中显式定义的静态构造函数，故障排除可能需要检查中间语言 (IL) 代码。
-   + 静态构造函数的存在将防止添加 BeforeFieldInit 类型属性。 这将限制运行时优化。
-   + 声明为 static readonly 的字段可能仅被分配为其声明的一部分或在静态构造函数中。 如果不需要显式静态构造函数，请在声明时初始化静态字段，而不是通过静态构造函数，以实现更好的运行时优化。
-   + 运行时在单个应用程序域中多次调用静态构造函数。 该调用是基于特定类型的类在锁定区域中进行的。 静态构造函数的主体中不需要其他锁定机制。 若要避免死锁的风险，请勿阻止静态构造函数和初始值设定项中的当前线程。 例如，不要等待任务、线程、等待句柄或事件，不要获取锁定，也不要执行阻止并行操作，如并行循环、Parallel.Invoke 和并行 LINQ 查询。
-
-2. 用法
-
-   + 静态构造函数的一种典型用法是在类使用日志文件且将构造函数用于将条目写入到此文件中时使用。
-   + 静态构造函数对于创建非托管代码的包装类也非常有用，这种情况下构造函数可调用 LoadLibrary 方法。
-   + 也可在静态构造函数中轻松地对无法在编译时通过类型参数约束检查的类型参数强制执行运行时检查。
-
-3. 示例
-
-   ```C#
-     public class Bus
-     {
-         // Static variable used by all Bus instances.
-         // Represents the time the first bus of the day starts its route.
-         protected static readonly DateTime globalStartTime;
-
-         // Property for the number of each bus.
-         protected int RouteNumber { get; set; }
-
-         // Static constructor to initialize the static variable.
-         // It is invoked before the first instance constructor is run.
-         static Bus()
-         {
-             globalStartTime = DateTime.Now;
-
-             // The following statement produces the first line of output,
-             // and the line occurs only once.
-             Console.WriteLine("Static constructor sets global start time to {0}",
-                 globalStartTime.ToLongTimeString());
-         }
-
-         // Instance constructor.
-         public Bus(int routeNum)
-         {
-             RouteNumber = routeNum;
-             Console.WriteLine("Bus #{0} is created.", RouteNumber);
-         }
-
-         // Instance method.
-         public void Drive()
-         {
-             TimeSpan elapsedTime = DateTime.Now - globalStartTime;
-
-             // For demonstration purposes we treat milliseconds as minutes to simulate
-             // actual bus times. Do not do this in your actual bus schedule program!
-             Console.WriteLine("{0} is starting its route {1:N2} minutes after global start time {2}.",
-                                this.RouteNumber,
-                                elapsedTime.Milliseconds,
-                                globalStartTime.ToShortTimeString());
-        }
-    }
-
-     class TestBus
-    {
-         static void Main()
-         {
-             // The creation of this instance activates the static constructor.
-             Bus bus1 = new Bus(71);
-
-             // Create a second bus.
-             Bus bus2 = new Bus(72);
-
-             // Send bus1 on its way.
-             bus1.Drive();
-
-             // Wait for bus2 to warm up.
-             System.Threading.Thread.Sleep(25);
-
-             // Send bus2 on its way.
-             bus2.Drive();
-
-             // Keep the console window open in debug mode.
-             Console.WriteLine("Press any key to exit.");
-             Console.ReadKey();
-        }
-    }
-    /* Sample output:
-         Static constructor sets global start time to 3:57:08 PM.
-         Bus #71 is created.
-         Bus #72 is created.
-         71 is starting its route 6.00 minutes after global start time 3:57 PM.
-         72 is starting its route 31.00 minutes after global start time 3:57 PM.
-    */
-
-   ```
+   
+   这个示例比较简单的实现了拖放的功能，没有异常检查等操作。
+   
+   看效果
+   
+   <video src="D:\personal\rote\WPF.assets\MainWindow 2023-06-15 21-01-25.mp4"></video>

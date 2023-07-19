@@ -4,21 +4,21 @@
 
 1. 查看用户、用户组
 
-   ``` 
-   cat /etc/passwd				#查看所有用户列表
-   w						   #查看当前活跃的用户列表
-   cat /etc/group				#查看用户组
+   ``` shell
+   cat /etc/passwd    #查看所有用户列表
+   w         #查看当前活跃的用户列表
+   cat /etc/group    #查看用户组
    ```
 
-   ```
-   groups					    #查看当前登录用户的组内成员
-   groups #root				#查看root用户坐在的组，以及组内成员
-   whoami					    #查看当前登录用户名
+   ``` shell
+   groups         #查看当前登录用户的组内成员
+   groups #root    #查看root用户坐在的组，以及组内成员
+   whoami         #查看当前登录用户名
    ```
 
 2. 新用户添加
 
-   ```
+   ``` shell
    useradd -d /home/cdx -m cdx
    ```
 
@@ -37,7 +37,7 @@
 
 3. 删除账号
 
-   ```
+   ``` shell
    userdel -r cdx
    ```
 
@@ -47,7 +47,7 @@
 
 4. 修改账号
 
-   ```
+   ``` shell
    usermod -d /home/c
    ```
 
@@ -80,7 +80,7 @@
 
    \# passwd sam
 
-   ```
+   ``` shell
    [root@admin ~]# passwd sam
    Changing password for user sam.
    New password:
@@ -99,37 +99,18 @@
    passwd命令还可以用-l(lock)选项锁定某一用户，使其不能登录，例如：
 
    \# passwd -l sam
-   
-6. groupadd 命令用于将新组加入系统
 
-   ```
-   groupadd [－g gid] [－o]] [－r] [－f] groupname
-   
-   －g gid：指定组ID号。
-   －o：允许组ID号，不必惟一。
-   －r：加入组ID号，低于499系统账号。
-   －f：加入已经有的组时，发展程序退出。
-   ```
-
-7. groupdel命令删除组
-
-   ```
-   group [options] GROUP
-   ```
-
-6. 
-
-9. 账户登录异常
+6. 账户登录异常
 
    问题描述：有多个账户的情况，有某一个账户不能登录Linux。
 
-   ```
+   ```shell
    failed to execute /bin/bash:Resource temporarily unavilable
    ```
 
    使用其他账号登录后，切换至问题账户
 
-   ```
+   ```shell
    [admin@localhost ~]$ sudo su - scloan
    Last login: Tue Jun 12 14:06:31 CST 2018 on pts/3
    su: failed to execute /bin/bash: Resource temporarily unavailable
@@ -139,7 +120,7 @@
 
    检查配置文件
 
-   ```
+   ```shell
    [trade@am4126 ~]$ cat /etc/security/limits.d/20-nproc.conf
    # Default limit for number of user's processes to prevent
    # accidental fork bombs.
@@ -151,11 +132,90 @@
 
    后面两行的`*`表示登录账号，后面的`65536`则表示登录资源限制。在允许的情况，可以将其设置为无限制`unlimited`，修改完成后重新登录，恢复正常。
 
+7. groupadd 命令用于将新组加入系统
+
+   ``` shell
+   groupadd [－g gid] [－o]] [－r] [－f] groupname
+   
+   －g gid：指定组ID号。
+   －o：允许组ID号，不必惟一。
+   －r：加入组ID号，低于499系统账号。
+   －f：加入已经有的组时，发展程序退出。
+   ```
+
+8. groupdel命令删除组
+
+   ``` shell
+   group [options] GROUP
+   ```
+
+9. 查看用户信息
+
+   ``` shell
+   chage -l user
+   ```
+
+   ``` shell
+   [trade@am4-core1 ~]$ chage -l trade
+   Last password change                                    : Sep 17, 2021
+   Password expires                                        : never
+   Password inactive                                       : never
+   Account expires                                         : never
+   Minimum number of days between password change          : 0
+   Maximum number of days between password change          : 99999
+   Number of days of warning before password expires       : 7
+   ```
+
+10. 账户登录异常
+
+   问题描述：有多个账户的情况，有某一个账户不能登录Linux。
+
+   ``` shell
+   failed to execute /bin/bash:Resource temporarily unavilable
+   ```
+
+   使用其他账号登录后，切换至问题账户
+
+   ``` shell
+   [admin@localhost ~]$ sudo su - scloan
+   Last login: Tue Jun 12 14:06:31 CST 2018 on pts/3
+   su: failed to execute /bin/bash: Resource temporarily unavailable
+   ```
+
+   解释：资源不足，查看系统内存和磁盘空间使用情况，未发现明显异常。其他账号都可以正常切换登录。
+
+   检查配置文件
+
+   ``` shell
+   [trade@am4126 ~]$ cat /etc/security/limits.d/20-nproc.conf
+   # Default limit for number of user's processes to prevent
+   # accidental fork bombs.
+   # See rhbz #432903 for reasoning.
+   
+   *          soft    nproc     65536
+   *          hard    nproc     65536
+   ```
+
+   后面两行的`*`表示登录账号，后面的`65536`则表示登录资源限制。在允许的情况，可以将其设置为无限制`unlimited`，修改完成后重新登录，恢复正常。
+
+    - 如果使用root用户切换其他用户，或者直接登录报错没有权限，除了检测当前用户文件目录的权限外，还要检测`/home`路径的权限
+
 ## 磁盘管理
 
 1. df  (disk free)
 
-   ![image-20211012135220456](C:\Users\chendx36743\AppData\Roaming\Typora\typora-user-images\image-20211012135220456.png)
+   ``` shell
+    [trade@am4-ips ~]$ df -h
+    Filesystem             Size  Used Avail Use% Mounted on
+    /dev/mapper/rhel-root   84G   37G   48G  44% /
+    devtmpfs                16G     0   16G   0% /dev
+    tmpfs                   20G  2.1M   20G   1% /dev/shm
+    tmpfs                   16G   18M   16G   1% /run
+    tmpfs                   16G     0   16G   0% /sys/fs/cgroup
+    /dev/sda1              797M  163M  635M  21% /boot
+    tmpfs                  3.2G     0  3.2G   0% /run/user/1000
+    tmpfs                  3.2G     0  3.2G   0% /run/user/0
+   ```
 
    第一列指定文件系统的名称，第二列指定一个特定的文件系统1K-块1K是1024字节为单位的总内存。已用和可用列正在使用中，分别指定的内存量。使用列指定使用的内存的百分比，而最后一栏"安装在"指定的文件系统的挂载点。
 
@@ -173,7 +233,7 @@
 
    语法
 
-   ```
+   ``` shell
    du [-abcDhHklmsSx][-L <符号连接>][-X <文件>][--block-size][--exclude=<目录或文件>][--max-depth=<目录层数>][--help][--version][目录或文件]
    ```
 
@@ -188,7 +248,7 @@
    | -k   | 以KBytes列出容量显示                                         |
    | -m   | 以MBytes列出容量显示                                         |
 
-   ```
+   ``` shell
    [trade@am4126 am4newtran]$ ll
    total 0
    drwxrwxr-x 3 trade trade 23 Oct 13 16:06 scripts
@@ -232,13 +292,13 @@
 
 ### 物理内存和虚拟内存
 
-​	直接从物理内存读写数据要比从硬盘读写数据快很多，所以我们希望数据的读写都在内存当中完成，而内存是有限的，这就引出了物理内存和虚拟内存的概念。
+ 直接从物理内存读写数据要比从硬盘读写数据快很多，所以我们希望数据的读写都在内存当中完成，而内存是有限的，这就引出了物理内存和虚拟内存的概念。
 
-​	物理内存就是系统硬件提供的大小，是真正的内存，相对于物理内存，在Linux下还有一个需内内存的概念，就是为了满足物理内存的不足而提出的策略，利用磁盘空间虚拟出的一块逻辑内存，用作虚拟内存的磁盘空间被称为交换空间swap space。
+ 物理内存就是系统硬件提供的大小，是真正的内存，相对于物理内存，在Linux下还有一个需内内存的概念，就是为了满足物理内存的不足而提出的策略，利用磁盘空间虚拟出的一块逻辑内存，用作虚拟内存的磁盘空间被称为交换空间swap space。
 
-​	作为物理内存的扩展，Linux会在物理内存不足时，使用交换分区的虚拟内存，更详细的说，就是内核会将暂时不使用的内存块信息写到交换空间，这样，物理内存得到了释放，这块内存就可以用于其他目的，当需要用到原始的内容时，这些信息会被重新从交换空间读入物理内存。
+ 作为物理内存的扩展，Linux会在物理内存不足时，使用交换分区的虚拟内存，更详细的说，就是内核会将暂时不使用的内存块信息写到交换空间，这样，物理内存得到了释放，这块内存就可以用于其他目的，当需要用到原始的内容时，这些信息会被重新从交换空间读入物理内存。
 
-​	Linux的内存管理采取的时分页存取机制，为了保证物理内存得到充分的利用，内核会在适当的时候将物理内存中不经常使用的数据块自动交换到虚拟内存中，而将经常使用的信息保留早物理内存。
+ Linux的内存管理采取的时分页存取机制，为了保证物理内存得到充分的利用，内核会在适当的时候将物理内存中不经常使用的数据块自动交换到虚拟内存中，而将经常使用的信息保留早物理内存。
 
 1. Linux系统会不时的进行页面交换操作，以保持6尽可能多的空闲物理内存，即使并没有什么事情需要内存，Linux也会交换出暂时不用的内存页面，这样避免等待交换所需要的时间。
 2. Linux进行页面交换时有条件的，不是所有页面在不用是都交换到虚拟内存中，Linux内核根据“最近最经常使用”算法，仅仅将一些不经常使用的页面文件交换到虚拟内存。
@@ -254,7 +314,7 @@
    >
    > 内核使用的缓冲区和缓存
 
-   ```
+   ``` shell
    ludir@ubuntu:~$ free
                  total        used        free      shared  buff/cache   available
    Mem:        3995088      876132     2501732        1976      617224     2879272
@@ -275,13 +335,13 @@
 
    **available**： 列显示还可以被应用程序使用的物理内存大小
 
-   + **free 与 available**
+   - **free 与 available**
      在 free 命令的输出中，有一个 free 列，同时还有一个 available 列。这二者到底有何区别？
      free 是真正尚未被使用的物理内存数量。至于 available 就比较有意思了，它是从应用程序的角度看到的可用内存数量。Linux 内核为了提升磁盘操作的性能，会消耗一部分内存去缓存磁盘数据，就是我们介绍的 buffer 和 cache。所以对于内核来说，buffer 和 cache 都属于已经被使用的内存。当应用程序需要内存时，如果没有足够的 free 内存可以用，内核就会从 buffer 和 cache 中回收内存来满足应用程序的请求。所以从应用程序的角度来说，available  = free + buffer + cache。请注意，这只是一个很理想的计算方式，实际中的数据往往有较大的误差。
 
    还可以使用命令 free -m 或者 free -g 来友好显示，已MB或者GB为单位显示，如果想有统计结果显示内存总量，可以使用free -mt，简单计算每列的内存总量
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ free -m
                  total        used        free      shared  buff/cache   available
    Mem:          64428       62115         478         111        1833        1391
@@ -311,14 +371,14 @@
 
    top命令提供正在运行的系统的实时动态视图，检查每个进程的内存使用情况。最大的优点就是发现可能已经失控的进程ID，可以根据这个来进行故障排除。
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ top
    top - 11:14:33 up 16 days, 17:26,  3 users,  load average: 2.31, 2.22, 2.01
    Tasks: 413 total,   1 running, 412 sleeping,   0 stopped,   0 zombie
    %Cpu(s):  9.6 us,  5.6 sy,  0.0 ni, 84.0 id,  0.0 wa,  0.0 hi,  0.8 si,  0.0 st
    KiB Mem : 65974800 total,   596560 free, 63631676 used,  1746564 buff/cache
    KiB Swap: 16777212 total,  8443256 free,  8333956 used.  1400120 avail Mem
-   
+
      PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
    13153 zookeep+  20   0 6549088   1.0g   4600 S  57.3  1.6   1382:31 java
      937 trade     20   0 9764684   2.1g   3988 S  48.3  3.3 883:50.54 java
@@ -327,14 +387,14 @@
 
    如果想top可以更友好的显示，可以使用命令 top -o %MEM，按进程所用内存对所有进程进行排序。
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ top -o %MEM
    top - 11:16:11 up 16 days, 17:27,  3 users,  load average: 2.43, 2.33, 2.07
    Tasks: 414 total,   1 running, 413 sleeping,   0 stopped,   0 zombie
    %Cpu(s):  9.6 us,  3.9 sy,  0.0 ni, 86.3 id,  0.0 wa,  0.0 hi,  0.3 si,  0.0 st
    KiB Mem : 65974800 total,   552240 free, 63644928 used,  1777632 buff/cache
    KiB Swap: 16777212 total,  8443256 free,  8333956 used.  1386760 avail Mem
-   
+
      PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
    22574 root      20   0   18.7g  13.6g   3184 S  12.6 21.5   6062:06 mysqld
    12635 trade     20   0   18.6g   3.9g     40 S  15.9  6.2   1545:47 hsserver
@@ -345,7 +405,7 @@
 
    Virtual Memory Statistics 虚拟内存统计
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ vmstat 5 5
    procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
@@ -358,10 +418,10 @@
 
    字段说明
 
-   | 字段名称     | 说明                                      |
+   | 字段名称     | 说明                                       |
    | ------------ | ----------------------------------------- |
-   | procs.r      | 进程，运行队列中进程数量                  |
-   | procs.b      | 进程，等待IO的进程数量                    |
+   | procs.r      | 进程，运行队列中进程数量                    |
+   | procs.b      | 进程，等待IO的进程数量                      |
    | memory.swpd  | 内存，使用虚拟内存大小                    |
    | memory.free  | 内存，可用内存大小                        |
    | memory.buff  | 内存，用作缓冲的内存大小                  |
@@ -408,7 +468,7 @@
    > -l：使用长格式显示进程信息
    >
    > -f：使用完整的格式显示进程信息
-   
+
 2. pstree命令
 
    这个命令可以输出系统中各进程的树形结构，以更加直观地判断个进程之间的相互关系。
@@ -429,38 +489,50 @@
    >
    > 5.使用`pkill`命令可以根据进程的名称，运行该进程的用户，进程所在的终端等多种属性终止特定的进程。
 
+4. 根据pid查看进程路径
+
+   ``` shell
+   ps -aux |grep -v grep|grep PID
+   ```
 
 ## 端口
 
 1. netstat命令查看端口状态
 
+   用于显示TCP连接
+
    参数说明：
 
-   | 参数名称 | 说明                                                      |
-   | -------- | --------------------------------------------------------- |
-   | -t       | 指明显示TCP端口                                           |
-   | -u       | 指明显示UDP端口                                           |
-   | -l       | 仅显示监听套接字                                          |
-   | -p       | 显示进程标识符和程序名称，每一个套接字/端口都属于一个程序 |
-   | -n       | 不进行DNS轮询，显示IP                                     |
+   | 参数名称 | 说明                                                         |
+   | -------- | ------------------------------------------------------------ |
+   | -t       | 指明显示TCP端口                                              |
+   | -u       | 指明显示UDP端口                                              |
+   | -l       | 仅显示监听套接字                                             |
+   | -p       | 显示进程标识符和程序名称，每一个套接字/端口都属于一个程序    |
+   | -n       | 不进行DNS轮询，显示IP，显示活动的TCP连接，地址和端口号以数字形式表示 |
+   | -a       | 显示所有活动的TCP连接，以及正在监听的TCP和UDP端口            |
+   | -e       | 显示以太网统计信息，可以和-s参数联合使用                     |
+   | -o       | 显示活动的TCP连接以及每个连接对应的进程ID                    |
+   | -s       | 显示每个协议的统计数据                                       |
+   | -r       | 显示IP路由表的内容，作用等价于路由打印命令routeprint         |
 
    - 查看所有TCP端口
 
-     ```
+     ``` shell
      [trade@am4126 ~]$ netstat -ntlp
      ```
-     
+
    - 查看所有8088端口
-   
-     ```
+
+     ``` shell
      [trade@am4126 ~]$ netstat -ntulp | grep 8088
      ```
-   
+
 2. lsof命令
 
    查看指定端口所运行的程序
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ lsof -i:10012
    COMMAND    PID  USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
    java      5658 trade  459u  IPv4 266375312      0t0  TCP am4126:51690->am4126:10012 (ESTABLISHED)
@@ -472,7 +544,7 @@
 
    查看进程是否存在
 
-   ```
+   ``` shell
    [trade@am4126 ~]$ ps -ef | grep nginx
    comp     13887     1  0 Oct26 ?        00:00:00 nginx: master process ./nginx
    ```
@@ -481,7 +553,7 @@
 
 1. find基本语法
 
-   ```
+   ``` shell
    find [PATH] [option] [action]
    
    # 与时间有关的参数：
@@ -516,7 +588,7 @@
 
 2. ls命令
 
-   ```
+   ``` shell
    -a ：全部的档案，连同隐藏档( 开头为 . 的档案) 一起列出来～ 
    -A ：全部的档案，连同隐藏档，但不包括 . 与 .. 这两个目录，一起列出来～ 
    -d ：仅列出目录本身，而不是列出目录内的档案数据 
@@ -543,30 +615,34 @@
 
    语法：
 
-   ```
+   ``` shell
    cp [options] source dest
    ```
 
    参数说明：
 
-   ```
-   -a:此选项通常在复制目录时使用，它保留链接、文件属性，并复制目录下的所有内容。其作用等于dpR参数组合
-   -d：复制时保留链接。这里所说的链接相当于 Windows 系统中的快捷方式
-   -f：覆盖已经存在的目标文件而不给出提示
-   -i：与 -f 选项相反，在覆盖目标文件之前给出提示，要求用户确认是否覆盖，回答 y 时目标文件将被覆盖
-   -p：除复制文件的内容外，还把修改时间和访问权限也复制到新文件中
-   -r：若给出的源文件是一个目录文件，此时将复制该目录下所有的子目录和文件
-   -l：不复制文件，只是生成链接文件
-   ```
+   - -r或者-R：递归处理，将指定目录下的子文件和子目录一并处理
+   - -f: 强行复制文件或目录，不论目标文件或目录是否已经存在
+   - -p: 保留文件属性(所有者、所属组、文件权限、文件时间)
+   - -a: 相当于-prd
+   - -i: 覆盖既有文件时先询问用户
+   - -l: 对源文件建立硬连接，非复制文件
+   - -S: 在备份文件时，用指定的后缀"SUFFIX"代替文件的默认后缀
+   - -b: 覆盖已存在的文件目标前将目标文件备份
+   - -v: 详细显示命令执行的操作
+   - -d: -no-dereference -preserv=links 复制符号连接加的选项
 
 4. rm命令
 
    语法
-   ```
+
+   ``` shell
    rm [options] name
    ```
+
    参数说明
-   ```
+
+   ``` shell
    -f：force，忽略不存在的文件，不会出现警告信息
    -i：互动模式，在删除前会询问用户是否操作
    -r：递归删除，最常用于目录删除，它是一个非常危险的参数
@@ -576,13 +652,13 @@
 
    语法
 
-   ```
+   ``` shell
    mv [options] source dest
    ```
 
    参数说明
 
-   ```
+   ``` shell
    -b：当目标文件或目录存在时，在执行覆盖前，会为其创建一个备份
    -i：如果指定移动的源目录或文件与目标的目录或文件同名，则会先询问是否覆盖旧文件，输入也表示直接覆盖
    -f：如果指定移动的源目录或文件与目标的目录或文件同名，不会询问，直接覆盖旧文件
@@ -592,7 +668,7 @@
 
 6. tar压缩/解压缩
 
-   ```
+   ``` shell
    -c ：新建打包文件
    -t ：查看打包文件的内容含有哪些文件名
    -x ：解打包或解压缩的功能，可以搭配-C（大写）指定解压的目录，注意-c,-t,-x不能同时出现在同一条命令中
@@ -603,12 +679,12 @@
    -C dir ：指定压缩/解压缩的目录dir
    ```
 
-   ```
-   ludir@ubuntu:~$ tar -czvf test.tar.gz a.c				#将a.c文件压缩到test.tar.gz文件
+   ``` shell
+   ludir@ubuntu:~$ tar -czvf test.tar.gz a.c    #将a.c文件压缩到test.tar.gz文件
    a.c
-   ludir@ubuntu:~$ tar -tzvf test.tar.gz					#查看test.tar.gz压缩包里的文件
+   ludir@ubuntu:~$ tar -tzvf test.tar.gz     #查看test.tar.gz压缩包里的文件
    -rw-rw-r-- ludir/ludir       0 2021-11-02 23:53 a.c
-   ludir@ubuntu:~$ tar -xzvf test.tar.gz					#解压缩文件test.tar.gz
+   ludir@ubuntu:~$ tar -xzvf test.tar.gz     #解压缩文件test.tar.gz
    a.c
    ```
 
@@ -616,13 +692,13 @@
 
    语法：
 
-   ```
+   ``` shell
    gzip [option] file_name
    ```
 
    参数说明：
 
-   ```
+   ``` shell
    -c 将输出写到标准输出上，并保留原有文件。
    -d 将压缩文件解压。
    -l 对每个压缩文件，显示下列字段：
@@ -636,7 +712,7 @@
 
    实例：
 
-   ```
+   ``` shell
    gzip *
    % 把当前目录下的每个文件压缩成 .gz 文件。
    
@@ -652,7 +728,7 @@
 
 8. mkdir创建目录命令
 
-   ```
+   ``` shell
    mkdir [option] direction
    -m, --mode=模式，设定权限<模式> (类似 chmod)，而不是 rwxrwxrwx 减 umask
     -p, --parents  可以是一个路径名称。此时若路径中的某些目录尚不存在,加上此选项后,系统将自动建立好那些尚不存在的目录,即一次可以建立多个目录; 
@@ -661,7 +737,7 @@
 
 9. rmdir删除目录命令
 
-   ```
+   ``` shell
    rmdir [option] direction
    -p 递归删除目录dirname，当子目录删除后其父目录为空时，也一同被删除。如果整个路径被删除或者由于某种原因保留部分路径，则系统在标准输出上显示相应的信息。 
    -v --verbose  显示指令执行过程 
@@ -669,14 +745,14 @@
 
 10. chmod命令，改变文件权限
 
-    ```
+    ``` shell
     chmod [-R] xyz file or direction
     -R 表示递归的持续更新，即连同子目录下的所有文件都会更改
     ```
 
 11. chown命令，改变文件所有者
 
-    ```
+    ``` shell
     chown [para] [owner][:[group]] file
     -c 显示更改的部分的信息
     -f 忽略错误信息
@@ -688,7 +764,7 @@
 
 12. chgrp命令，改变文件所属组
 
-    ```
+    ``` shell
     chgrp [para] file or direction
     -c 当发生改变时输出调试信息
     -f 不显示错误信息
@@ -698,9 +774,39 @@
     --no-deference 作用域符号链接本身
     ```
 
-
 ## 文本
 
 1. cat 用途是连接文件或标准输出并打印。这个命令常用来显示文件内容，或者将几个文件连接起来显示，或者从标准输入读取内容并显示，它常与重定向符号配合使用。
 2. more命令和cat的功能一样都是查看文件里的内容，但是有所不同的是more可以按页来查看文件的内容，还支持直接跳转行等功能。
-3. less命令用法比起more更加有弹性。在more的时候，我们并没有办法向前面翻，只能往后面看，但若使用了less时，就可以使用`pageup``pagedown`等按键的功能前后翻看文件，更容易来看一个文件的内容。
+3. less命令用法比起more更加有弹性。在more的时候，我们并没有办法向前面翻，只能往后面看，但若使用了less时，就可以使用`pageup`,`pagedown`等按键的功能前后翻看文件，更容易来看一个文件的内容。
+
+## 修改主机名
+
+- `hostnamectl`命令：控制系统主机名
+- `nmcli`命令：是一个控制NetworkManager的命令行工具
+- `nmtui`命令：是一个控制NetworkManager的文本用户界面
+- `/etc/hostname`文件：这个文件中包含系统的静态主机名
+  
+### 在Linux中使用hostnamectl来改变主机名
+
+查看主机名
+
+```shell
+$ hostnamectl
+$ hostnamectl status
+$ hostnamectl status
+   Static hostname: daygeek-Y700
+         Icon name: computer-laptop
+           Chassis: laptop
+        Machine ID: 31bdeb7b83230a2025d43547368d75bc
+           Boot ID: 267f264c448f000ea5aed47263c6de7f
+  Operating System: Manjaro Linux
+            Kernel: Linux 4.19.20-1-MANJARO
+      Architecture: x86-64
+```
+
+修改主机名使用命令格式
+
+```shell
+hostnamectl set-hostname [NEW HOSTNAME]
+```
